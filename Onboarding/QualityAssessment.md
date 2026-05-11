@@ -23,15 +23,16 @@ Esta fase evalúa si el attempter está listo para realizar tareas reales.
 **Guía para escribir un buen Prompt:**
 1.  **Seguir el tipo de issue:** Si es Bug Injection, el prompt debe tratar sobre un error.
 2.  **Detalle suficiente:** El modelo debe tener contexto para trabajar, pero sin recibir la solución.
-3.  **Desafiar al modelo:** No pongas tareas triviales; el problema debe requerir análisis lógico.
-4.  **Lenguaje natural:** Escribe como si fueras un desarrollador reportando un issue real en GitHub.
+3.  **No dar la solución:** El prompt debe describir el problema claramente sin revelar cómo resolverlo.
+4.  **Desafiar al modelo:** No pongas tareas triviales; el problema debe requerir análisis lógico.
+5.  **Lenguaje natural:** Escribe como si fueras un desarrollador reportando un issue real en GitHub.
 
 ### Imagen 5 - Tarea Práctica 1
 **Escenario:** Frontend de e-commerce en JavaScript. El buscador acepta texto pero la lista de productos no cambia.
 **Tipo de Issue:** Bug Injection.
 
-**Borrador de Prompt:**
-> Fix the bug in the product list where the search bar does not filter the results. Currently, typing in the search bar updates the input field but the displayed products remain the same. The solution should ensure the list filters dynamically and handles empty states correctly.
+**Prompt (corregido — estilo GitHub issue):**
+> The search bar on the product list page accepts input but the displayed products never change. Typing in the search field updates the input correctly, however the product list remains unchanged regardless of what is typed. The filtering logic does not appear to be triggered when the user types. Please fix this so the list updates dynamically based on the search input.
 
 ---
 
@@ -56,19 +57,23 @@ Un F2P debe ser sensible al bug. Los tests B y C son demasiado genéricos o prue
 **Technical Justification (English):**
 A valid F2P test must be bug-sensitive, meaning it must fail while the bug is present. Tests B and C are too generic or validate behaviors that are unaffected by item duplication, rendering them ineffective for validating this specific fix. In contrast, Tests A and D directly target the internal structure of the items array and the logic of item duplication, ensuring the bug is correctly detected and resolved.
 
+**Explicación para el cuadro de texto (F2P):**
+> Test B: the total of 20 passes even with the bug because two duplicate entries at price 10 produce the same result as one item with quantity 2. Test C: the order assertions pass even with the bug because the duplicate entry is appended at the end, leaving items[0] and items[1] unchanged.
+
 ### Ejercicio 2: Selección de Tests P2P
 **Contexto:** Mismo bug en `shoppingCart.js`. Se busca asegurar que otras funciones no se rompan tras el arreglo.
 
 **Análisis de Tests Propuestos (P2P):**
 
 *   **Test A (`removeItem`):** ✅ **VÁLIDO.** Prueba una funcionalidad distinta que no depende del bug de duplicados. Pasa antes y después.
-*   **Test B (`total`):** ✅ **VÁLIDO.** Aunque usa un caso que dispara el bug, el resultado matemático del total es consistente tanto con duplicados como con cantidades incrementadas. Pasa siempre.
+*   **Test B (`total`):** ❌ **INVÁLIDO.** Agrega A1 dos veces y espera `total() = 25`. Con el bug (duplicados) suma `10+10+5 = 25` ✅. Pero después del fix, si `total()` suma solo `price` sin multiplicar por `qty`, retorna `10+5 = 15` ❌ — la prueba fallaría en Phase 2. Es una coincidencia numérica que no garantiza que el test pase en ambas fases.
 *   **Test C (`clearCart`):** ✅ **VÁLIDO.** Funcionalidad de limpieza base. Pasa siempre.
 *   **Test D (`getItem`):** ✅ **VÁLIDO.** Funcionalidad de búsqueda base. Pasa siempre.
 
-**Respuesta para el Assessment:**
-*   **Selección:** A, B, C, D.
-*   **Explicación:** N/A (Todos son válidos).
+**Respuesta para el Assessment (P2P):**
+*   **Selección:** A, C, D.
+*   **Explicación para el cuadro de texto (P2P):**
+> Test B: adding A1 twice triggers the bug, and the expected total of 25 is a numerical coincidence — with duplicates it sums 10+10+5=25, but after the fix if total() sums price without multiplying by quantity it would return 15, causing this test to fail in Phase 2.
 **Tipo de Issue:** Bug Injection (Corrección de un error introducido).
 
 **Borrador Propuesto para el Prompt:**
