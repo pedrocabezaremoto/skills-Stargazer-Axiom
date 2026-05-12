@@ -100,7 +100,7 @@ Verifica punto por punto:
 
 #### Para run_script.sh:
 - [ ] ¿Tiene `set -e` al inicio?
-- [ ] ¿Emite exactamente `=== INICIO DE LA FASE 1 ===` y `=== INICIO DE LA FASE 2 ===`?
+- [ ] ¿Emite exactamente `=== PHASE 1 START ===` y `=== PHASE 2 START ===`?
 - [ ] ¿Usa `tee -a "$RAW_OUTPUT_FILE"` para capturar la salida?
 - [ ] ¿Los comandos de test usan `|| true` para no detener el script en fallos?
 - [ ] ¿Aplica `test_patch` antes de la Fase 1 y `gold_patch` antes de la Fase 2?
@@ -129,13 +129,27 @@ Diagnostica según el síntoma:
 
 ---
 
+## ⚠️ Pre-Entrega — Checklist del Revisor
+
+Antes de subir cualquier tarea, revisar **`references/reviewer-grading-rubric.md`**.
+Ese archivo contiene la tabla exacta con la que el revisor califica cada dimensión.
+
+Puntos críticos que más causan FAIL:
+- Prompt y rúbrica en distinto nivel de granularidad
+- Pesos no suman 100 / f2p+p2p < 20%
+- Criterio de rúbrica que no se puede evaluar sin leer el prompt (no autosuficiente)
+- Gold patch contiene archivos de test
+- Cualquiera de los 8 archivos faltante al entregar
+
+---
+
 ## Reglas Invariantes
 
 Estas reglas **nunca** se pueden romper, independientemente del contexto:
 
 1. **El repositorio siempre vive en `/app`** — nunca cambiar este path.
 2. **`ENTRYPOINT` de Instance.dockerfile siempre es `["/bin/bash"]`** — sin excepciones.
-3. **Los marcadores de fase son literales** — `=== INICIO DE LA FASE 1 ===` y `=== INICIO DE LA FASE 2 ===`.
+3. **Los marcadores de fase son literales** — `=== PHASE 1 START ===` y `=== PHASE 2 START ===`.
 4. **Los comandos de test llevan `|| true`** — para que el script no aborte en fallos esperados.
 5. **`parse_results.sh` es independiente** — no asume nada del runner, solo lee el archivo raw.
 6. **`BASE.dockerfile` no tiene lógica de instancia** — los patches van solo en Instance.

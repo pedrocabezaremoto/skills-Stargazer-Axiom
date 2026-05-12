@@ -58,7 +58,9 @@ skills-Stargazer-Axiom/
 │   ├── rating-guidelines.md
 │   ├── rubric-criteria.md
 │   ├── rubric-guide.md
-│   └── script-templates.md
+│   ├── script-templates.md
+│   ├── checklist.md            ← checklist de revisión (leer antes de entregar)
+│   └── reviewer-grading-rubric.md ← ⚠️ LEER ANTES DE ENTREGAR — tabla exacta de FAIL/PASS del revisor
 │
 ├── Stargazer_Eval/             ← evaluador oficial de Outlier
 │   ├── Eval/                   ← 8 criterios de evaluación (0_Master a 8_Coverage)
@@ -89,6 +91,7 @@ skills-Stargazer-Axiom/
 | 6 | Crear `Base.dockerfile` e `Instance.dockerfile` |
 | 7 | Crear `run_script.sh` y `parse_results.sh` |
 | 8 | Correr `validation_script.sh` y entregar |
+| **PRE-ENTREGA** | **Revisar `references/reviewer-grading-rubric.md` — verificar cada dimensión antes de subir** |
 
 ---
 
@@ -97,7 +100,7 @@ skills-Stargazer-Axiom/
 1. El repo siempre vive en `/app` dentro de Docker
 2. `ENTRYPOINT` de Instance.dockerfile siempre es `["/bin/bash"]`
 3. `run_script.sh` SOLO aplica patches y corre tests — nada más
-4. Los marcadores de fase son literales: `=== INICIO DE LA FASE 1 ===` y `=== INICIO DE LA FASE 2 ===`
+4. Los marcadores de fase son literales: `=== PHASE 1 START ===` y `=== PHASE 2 START ===` (en inglés, exactamente así)
 5. Los comandos de test llevan `|| true` para no abortar en fallos esperados
 6. Los tests f2p usan sufijo `*.f2p.test.*` y los p2p usan `*.p2p.test.*`
 
