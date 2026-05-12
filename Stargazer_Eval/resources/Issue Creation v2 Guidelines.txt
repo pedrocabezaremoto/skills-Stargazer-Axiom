@@ -1,0 +1,1326 @@
+﻿Stargazer Axiom Guidelines
+Welcome! This document outlines the process and structure for creating issues for the Stargazer Axiom project, including code base preparation, issue creation, solution development, test writing, and setting up Docker files and execution scripts.
+Table of Contents (TOC)
+Project Overview        3
+Task Overview        3
+Project Structure        4
+Component Descriptions        5
+Step 1: Setup and Analysis (return to TOC)        6
+1.1 Environment Setup        6
+Step 2: Issue Creation and Solution (return to TOC)        7
+2.1 Write Issue Statement        7
+2.2 Rate the difficulty of your issue  (return to TOC)        7
+2.3 Create the Issue  (return to TOC)        7
+2.4 Test the Issue Message        8
+2.5 Generate the Solution and Gold Patch  (return to TOC)        9
+Step 3: Testing  (return to TOC)        10
+Expected Test Behavior        10
+3.1 Write Fail-to-Pass (F2P) Tests        10
+3.2 Write Pass-to-Pass (P2P) Tests  (return to TOC)        11
+3.3 Generate the Test Patch  (return to TOC)        11
+Step 4: Docker and Scripts (return to TOC)        12
+4.1 Create Run Script        12
+4.2 Create Parse Script  (return to TOC)        13
+4.3 Create Base Dockerfile        14
+4.4 Create Instance Dockerfile  (return to TOC)        14
+Step 5: Running the Validation Script (return to TOC)        15
+Step 6: Add tags (return to TOC)        15
+Step 7: Rubric Creation (return to TOC)        16
+Guidelines  (return to TOC)        16
+Core Principles of Rubric Criteria:        17
+Quality Dimensions        17
+Key Requirements  (return to TOC)        17
+Issue Type Examples (return to TOC)        19
+Bug Injection        19
+Appendix: Useful Resources  (return to TOC)        20
+Environment Setup        20
+Appendix: Dockerfile Templates  (return to TOC)        21
+Appendix: Script Templates  (return to TOC)        23
+Template for run_script.sh        23
+Template for parse_results.sh  (return to TOC)        25
+Appendix: Validation Script  (return to TOC)        29
+
+
+Changelog (return to TOC)
+ Dates 
+ Date
+	 No type 
+ Updates
+	Date
+	* Text here.
+* Text here.
+	Date
+	
+
+	Date
+	
+
+	Project Overview
+The purpose of this project is to create a database of challenging issue requests for a repository. This database will be used to benchmark and improve the ability of coding agents to implement changes in a codebase in response to user prompts.
+To achieve this, you will build a standard project setup around an assigned repository. You will then create a challenging prompt requesting changes to the codebase. You will check that the model fails to respond adequately to your prompt, write your own solution to the issue, create unit tests to verify your solution, and compose a rubric that can be used to grade how successful the agent was in responding to your issue. When you are finished, you will prepare the required patches, scripts, and Docker files so the whole workflow can be reproduced and validated later.
+Task Overview
+
+
+	
+
+	Description
+	  
+
+	Setup and Analysis
+	First, you will clone the assigned repo and set up your environment. You will also explore the codebase so that you understand its structure and functionality.
+	
+
+  
+
+	Issue Creation and Solution
+	You will write a prompt that asks the agent to make changes to the codebase based on an assigned issue (e.g., bug fixes or new features). You will make sure that your prompt is challenging enough that at least one model fails to solve it. Then, you will write your own Golden Solution to your prompt.
+	  
+
+	Testing
+	You will create unit tests that can check whether a given solution adds all of the requested functionality without breaking any previously existing functionality.
+	  
+
+	Docker and Scripts
+	You will prepare Dockerfiles and scripts that ensure that your work on the task is reproducible.
+	  
+
+	Validation Script
+	You will run a validation script that checks that your solution passes all of the unit tests that you wrote.
+	  
+
+	Add Tags
+	You will add relevant tags to your task to categorize it.
+	  
+
+	Rubric Creation
+	You will write a rubric that consists of a series of criteria that can grade how good or bad a response to your prompt is.
+	
+
+Project Structure (return to TOC)
+It is important to organize the project with a clear and consistent structure from the start. This will make it easier to manage the repository, track the issue and fix, and ensure that everything runs correctly. 
+(MANDATORY) The file structure for this project must look like this:
+
+
+project/
+├── App/
+├── dockerfiles/
+│   ├── base.Dockerfile
+│   ├── instance.Dockerfile
+├── scripts/
+│   ├── run_script.sh
+│   └── parse_results.sh
+└── patches/
+    ├── gold_patch.patch
+    ├── test_patch.patch
+    └── basetoinstance.patch
+├── test_results.json
+Component Descriptions (return to TOC)
+1. App
+   * The project assumes a single repository, cloned directly from GitHub. You can use this folder to clone the repo in your local environment to design issues, create failing tests, and generate solution patches.
+2. Dockerfiles
+* Base Dockerfile (base.Dockerfile): This Dockerfile sets up the environment by creating /app, cloning the repository into it, and installing any required system or project dependencies.
+* Instance Dockerfile (instance.Dockerfile): This Dockerfile extends the base image and applies patches/basetoinstance.patch to /app. The build logic must handle the patch file, whether it is populated (this will be the case in Bug Injection tasks) or empty (this will be the case in all other tasks). In the case of Bug injection, the patch serves to transition the codebase into the designated problem state for evaluation.
+3. Scripts
+* The scripts/ directory contains executable shell scripts (run_script.sh, parse_results.sh) that are mounted into the container under /app/scripts. These scripts are responsible for applying additional patches, running tests, and parsing results.
+4. Patches
+* The patches/ directory defines all transformations applied to the repository at /app.
+   * basetoinstance.patch modifies the cloned repository to represent the problem scenario.
+   * test_patch.patch introduces tests that should fail before your patch is applied.
+   * gold_patch.patch introduces your solution to the issue, which should pass all the unit tests.
+5. JSON-Formatted Tests Results
+   * The test_results.json output from parse_results.sh
+Step 1: Setup and Analysis (return to TOC)
+1.1 Environment Setup
+Before reviewing the assigned codebase, make sure your environment is set up, Cursor is configured, and Docker is running. You can follow this guide[a] for detailed setup instructions.
+Create the following folders in your working directory:
+* dockerfiles
+* scripts
+* patches
+1.2 Clone Repo & Analyze Codebase
+First, open a new terminal and clone the given task repo using the provided repository clone command. Rename the cloned folder as App/. After that, explore the codebase you cloned:
+* Review the code structure and architecture
+* Understand dependencies and build process
+* Understand issue type you were assigned for this task (see here for examples):
+   * New feature request: Adding a new functionality not currently in the given code.
+   * Bug injection + resolution: Introducing a breaking change to working code
+   * Migration: Adapting all or part of the existing code to a new library/pattern/version without losing its original functionality.
+   * Performance Optimization: Improve speed, efficiency, or resource usage with no changes to the original functionality.
+   * Maintenance or testing enhancement: Updating dependencies, tests, or tooling
+Step 2: Issue Creation and Solution (return to TOC)
+2.1 Write Issue Statement
+After reviewing the codebase, you will create a prompt based on the issue that you were assigned. The prompt should make a request to the agent based on your issue type. It should also be complex enough that it challenges the models so that one of them fails.
+Prompt Guidelines:                
+* Specific enough that it is possible for the model to succeed
+* Not so detailed that it gives away the solution to the model
+* Should challenge models like GPT-OSS and QWEN.
+* Simple and clear, then add complexity if the model succeeds
+Prompt and Rubric Alignment:
+At the end of the task, you will write a rubric that can be used to grade at a granular level how well the model did in solving your issue. The prompt and the rubric need to be aligned on their level of specificity. This means:
+* Prompts must explicitly mention filenames, paths, functions, or modules if the rubric criteria reference them. If the rubric lists specific paths or APIs, the prompt must also contain those exact references.
+* It is acceptable to make the prompt unrealistically specific if that is necessary to align with the level of granularity in the rubric and guarantee that the rubric criteria unambiguously evaluate the solution 
+2.2 Rate the difficulty of your issue  (return to TOC)
+TO BE ADDED[b]
+2.3 Create the Issue  (return to TOC)
+Location: app/
+* For all issue types except Bug Injection, the files inside app/ must remain identical to the original repo.
+* For Bug Injection, introduce the bug directly inside the app/ folder so that this modified version represents the faulty instance state that the solution will fix.
+2.3.1 Generate Base-to-Instance Patch 
+You must generate an additional patch called basetoinstance.patch. If the issue type is Bug Injection, after introducing the bug, you need to capture the exact diff between the working base state and the broken instance state
+ If it’s not bug injection, please upload an empty basetoinstance.patch file to the task.
+2.4 Test the Issue Message 
+Make sure the issue message is challenging enough to cause at least one model to fail. To do so, open only the app/ folder in Cursor and have both models available. 
+* If it is a Bug injection task, make sure the app/ folder contains the bug
+* Paste the issue message and select one model. Then check whether it fails to create a valid solution.
+* Repeat the same with the other model.
+* If both models solve the issue correctly, rewrite or adjust the issue message to increase its complexity or add constraints until one of them fails. It is acceptable for the increased complexity to make the prompt somewhat unrealistic if that ensures a clear failure.
+* When at least one model fails, and the issue message meets all requirements, select "Yes" and continue with the task.
+* Extract the model failure trace from Cursor as documentation. (If both models fail, capturing one of them is enough.)
+
+
+ LightBulb.png 
+
+	IMPORTANT: Ensure that only the app/ folder is opened in Cursor so the models do not have access to the patches with the solution (you can open a new Cursor window with just the app/ content).
+	
+
+2.5 Generate the Solution and Gold Patch  (return to TOC)
+Once the model fails, you will create your own Golden Solution that represents a complete, flawless solution to your prompt issue.
+Location: patches/gold_patch.patch
+Implement your solution on the issue branch, then create a patch:
+# Make your changes to implement the solution
+# Edit the necessary files...
+
+
+# Create the patch and save it to the patches folder
+# Option A - Specific files:
+git diff <file1> <file2> ... > patches/gold_patch.patch
+
+
+# Option B - All changes (ensure no unrelated edits):
+git diff > patches/gold_patch.patch
+
+
+# Undo the changes to keep branch in problem state
+# Option A - Specific files:
+git checkout -- <path/to/file>
+
+
+# Option B - All files:
+git checkout -- .
+
+ LightBulb.png 
+
+	Important: Make sure the patch can be cleanly applied using git patch apply --ignore-whitespace
+	Step 3: Testing  (return to TOC)
+In this step, you must write tests to validate if ANY implemented solution (including the Golden solution you wrote yourself) solves your issue statement. For this, you will write Fail-to-Pass (F2P) and Pass-to-Pass (P2P) behavioral tests, meaning no check of structure / integration is required. The goal of the testing is to make sure that the code produces the correct behaviors; you should NOT test any specific implementation with your tests unless it was specifically requested in your prompt. Any solution that creates the correct behaviors without breaking any existing functionality should pass all tests.
+Expected Test Behavior
+Test Type 
+	Before Fix 
+	After Fix
+	Purpose
+	F2P
+	❌ Fail
+	✅ Pass
+	Verifies new behavior
+	P2P
+	✅ Pass
+	✅ Pass
+	Confirms existing features still work
+	3.1 Write Fail-to-Pass (F2P) Tests
+Location: Use **/*.f2p.test.{js,ts,php,etc} filenames so the parser[c] can detect them. Use these exact suffixes: parse scripts rely on them.
+Create tests that validate your solution:
+Characteristics:
+* ❌ FAIL on the problem state (before applying the gold patch)
+* ✅ PASS after applying the gold patch
+* Test the specific changes/functionality added by your solution
+Test examples by issue type:
+* Bug Injection: Tests that verify the bug is fixed (e.g., layout switching updates state correctly)
+* New Feature: Tests that verify the new feature exists and works (e.g., export button generates a valid CSV)Migration: Tests that verify the new library/pattern exists and is used correctly (e.g., new auth API is called)
+* Performance: Benchmark tests showing improvement and/or tests that confirm that updated code meets standards  (e.g., rendering completes in <100ms)
+* Maintenance: Tests that verify new tooling works or confirm any updated dependencies, documentation, refactoring, etc (e.g., linting rules are enforced)
+* Testing Enhancement: Tests that verify test files exist.
+ Compass.png 
+
+	Important: For Testing Enhancement tasks, F2P tests should verify test files exist with correct structure, naming conventions, and basic executability.
+	3.2 Write Pass-to-Pass (P2P) Tests  (return to TOC)
+Location: Use **/*.p2p.test.{js,ts,php,etc} filenames so the parser[d] can detect them. Use these exact suffixes; parse scripts rely on them.
+Create tests for existing functionality:
+Characteristics:
+* ✅ PASS on the problem state (before applying the gold patch)
+* ✅ PASS after applying the gold patch
+* Test functionality around/related to the changes
+* Ensure no regression or side effects
+ Compass.png 
+
+	Important: For Testing Enhancement tasks, P2P tests should validate the testing infrastructure hasn't regressed (e.g., test framework setup, test utilities, CI/CD pipeline), not the application functionality being tested by the new tests.
+	3.3 Generate the Test Patch  (return to TOC)
+Location: patches/test_patch.patch
+After writing both test suites, create a patch containing them:
+# 1. Create test files
+# Write your F2P and P2P tests...
+
+
+# 2. Create patch directly from working directory
+git diff > patches/test_patch.patch
+
+Important: Target.png 
+	* Make sure the patch can be cleanly applied using git patch apply --ignore-whitespace
+* The test_patch.patch must include only test files.
+test_patch.patch must NOT contain changes to application code, dependencies, or config files, such as:
+* package.json
+* package-lock.json
+* Source files outside the test directory
+	Step 4: Docker and Scripts (return to TOC)
+In this step, you will create scripts and a Dockerfile that ensure that your work is reproducible.
+4.1 Create Run Script
+* Location: scripts/run_script.sh
+* Template: Use this template as a starting point and modify it as needed.
+* The script should:
+1. Apply the test patch
+2. Run tests on broken state (Phase 1), showing detailed results
+3. Apply the gold patch
+4. Run tests on fixed state (Phase 2), showing detailed results
+5. Run cleanly without errors or warnings[e]
+
+
+ Warning.png 
+
+	IMPORTANT: All the repository dependencies and the necessary assets (env variables, etc) should be installed/configured in the base.Dockerfile . The run_script.sh should be focused ONLY on applying the patches and running the tests for each phase.
+	4.2 Create Parse Script  (return to TOC)
+* Location: scripts/parse_results.sh
+* Template: Use this template as a starting point and modify it to match the run_script.sh output.
+* The script should:
+1. Parse test output from the run_script.sh
+2. Identify Phase 1 results (broken state)
+3. Identify Phase 2 results (fixed state)
+4. Determine the overall result. Should output “SUCCESS” if all F2P failed and all P2P passed in phase 1, and all F2P/P2P passed in phase 2.
+5. Output results to a JSON file test_results.json with the required output format
+Required Output Format
+{
+  "phase_1": [
+    {
+      "name": "path/to/test/file.f2p.test.js | test title 1",
+      "status": "FAILED"
+    },
+    {
+      "name": "path/to/test/file.p2p.test.js | test title 2",
+      "status": "PASSED"
+    }
+  ],
+  "phase_2": [
+    {
+      "name": "path/to/test/file.f2p.test.js | test title 1",
+      "status": "PASSED"
+    },
+    {
+      "name": "path/to/test/file.p2p.test.js | test title 2",
+      "status": "PASSED"
+    }
+  ],
+  "overall_result": "SUCCESS"
+}
+4.3 Create Base Dockerfile
+* Location: dockerfiles/base.Dockerfile
+* The base Dockerfile is responsible for setting up the original environment as it is given to you when you open the task, and cloning the repository into /app. All tasks must follow the template and assume that the project root inside the container is always /app.
+Key requirements:
+* You must not modify the /app setup section or the ENTRYPOINT line.
+* You may only change:
+   * The FROM <base-image>:<tag> line to select an appropriate base image.
+   * The <repo_url> in the git clone command.
+   * The system dependencies section to install required packages.
+   * The project dependencies section to install libraries or tools needed by the tests.
+* The repository used for evaluation will always be cloned into /app inside this base image.
+* Do not copy scripts or patches into the image.
+* Do not run tests inside the Dockerfile; all tests are executed at runtime using mounted scripts/ and patches/.
+4.4 Create Instance Dockerfile  (return to TOC)
+* Location: dockerfiles/instance.Dockerfile
+* The instance Dockerfile extends the base image and applies the basetoinstance.patch to the repository located at /app. 
+* This file must follow the template and should not copy scripts or patches into the image. All scripts and patches will be mounted at runtime.
+Key requirements:
+* Replace <base_image_name> with the name of the image built from base.Dockerfile. The working directory must remain /app, matching the base image.
+* The instance Dockerfile must:
+* Reset to the latest commit inside /app.
+* Apply patches/basetoinstance.patch to produce the problem scenario.
+* As with the base.Dockerfile, do not copy scripts or patches, or run tests inside the Dockerfile; all tests are executed at runtime using mounted scripts/ and patches/.
+Step 5: Running the Validation Script (return to TOC)
+To verify all the deliverables follow the project structure, the dockerfiles build and run successfully, the scripts work, and the test_results.json is correctly created, create the local-validate-issue-invention.py validation script[f] and paste its content provided here from the root directory.
+After creating the validation script, run it from your terminal using the following command:
+python local-validate-issue-invention.py \
+     --base-dockerfile ./dockerfiles/base.Dockerfile \
+     --instance-dockerfile ./dockerfiles/instance.Dockerfile \
+     --run-script ./scripts/run_script.sh \
+     --parsing-script ./scripts/parse_results.sh \
+     --gold-patch ./patches/gold_patch.patch \
+     --test-patch ./patches/test_patch.patch \
+     --output ./test_results.json
+
+ InfoAlternate.png 
+
+	IMPORTANT: This script will generate a test_results.json file that you will upload as a new deliverable inside the task.
+	
+
+Step 6: Add tags (return to TOC)
+To help categorize the task, you will add tags relevant to your task and issue. If your task requires a specific tag not listed, you may select "Other" to add it manually.
+  
+
+Step 7: Rubric Creation (return to TOC)
+A rubric is a set of criteria that can be used to grade objectively and granularly how good a response is to a given prompt. You will create a series of criteria that exhaustively cover all the features of an ideal response to the prompt that you created. These criteria should cover all the features of a good response without being so restrictive that they exclude other possible good solutions. Therefore, you can start with your Golden Solution as a model for the rubric criteria, but make sure that you don’t write them in such a way that other possible good implementations are left out.
+Guidelines  (return to TOC)
+* Most tasks will target 10 – 15 criteria, but you may write more if the issue is particularly complex
+* There may be zero, one, or multiple criteria per quality dimension
+* You will assign weights to each criterion based on how important it is to the issue that you created
+* The “Correctness” quality dimension must always have at least one criterion and comprise at least 10% of your weighting.
+Core Principles of Rubric Criteria:
+* Self-contained and evaluable without external information; it should be possible to say whether the response passes or fails a criterion just by looking at the response and the criterion
+* Atomic: Test one distinct aspect per criterion
+* Unambiguous: Tie to measurable factors or unambiguous descriptions (avoid language like "important sections," "properly rendered," "should look good"; use enough specificity that the criterion can be graded objectively)
+* Specific: Reference specific code fragments, UI elements, data values, file paths
+* Maintain consistent granularity across all criteria
+Quality Dimensions
+Your criteria will cover the following dimensions of a good response to your prompt. All of these dimensions are optional except for Correctness, which must have at least one criterion and 10% of the overall weighting for every rubric.
+* Correctness – Does the generated code deliver the complete functional requirement expressed in the prompt? This dimension will be inclusive of excitability (syntactic correctness) as well as the logical correctness of the code.
+   * As such, this dimension will include fail-to-pass and pass-to-pass execution criteria where applicable
+* Independence – Is the generated code free of unnecessary components and/or dependencies that are not explicitly or implicitly required to fulfill the functional requirement expressed in the prompt?
+* Readability/Extensibility – Is the generated code well-presented and well-documented, such that it is as easy as possible to understand and/or extend by a future collaborator?
+* Execution Efficiency – Is the generated code free of significant inefficiencies in its utilization of memory and latency?
+* Visual Aesthetics – Are the artifacts produced by the generated code visually appealing according to popular design standards?
+Key Requirements  (return to TOC)
+* Each criterion must have an id text (title), requirement text (description), weight, and dimension.
+* The id text (title) must follow the format “rubric_criteria”, for example: “composer_setup”.
+* The sum of all weights must be 100.
+* Unit testing:
+   * You must add unit testing criteria (F2P and P2P) to your rubric. The ids must always be f2p_success and p2p_success, respectively.
+   * If there are multiple issues in the prompt, there must be a f2p_success rubric for every issue mentioned.
+   * At least 20% of total weight (30-40% for non-visual or logic-heavy components) must be applied to the previously mentioned criteria (f2p_success + p2p_success = 20+ points)[g]
+   * Do NOT reference specific test modules or cases
+Example:
+"rating_data": {
+  "rubric_criteria": [
+    {
+      "Correctness": [
+        {
+          "id": "f2p_success",
+          "weight": 15,
+          "requirement": "Fail-to-pass test execution success ..."
+        },
+        {
+          "id": "p2p_success",
+          "weight": 15,
+          "requirement": "Pass-to-pass test execution success ..."
+        }
+      ]
+    }
+  ]
+}
+
+________________
+Issue Type Examples (return to TOC)
+The following are examples of the kinds of prompts that you might use for each of the Issue Type categories:
+Bug Injection
+* “When I click the Change Layout button, nothing happens. It should switch layouts immediately.”
+* “The search bar used to filter results, but now it doesn't do anything when I type.”
+* “After submitting the signup form, the page reloads, but my account isn't created.”
+* “The theme toggle doesn't stay on dark mode when I refresh the page.”
+* “The cart total shows $0 even after I add items. Please fix that.”
+New Feature Request
+* “Add a Dark Mode toggle so users can switch between light and dark themes, and remember their preference.”
+* “Add a button on the report page that lets users download the data as a CSV file.”
+* “Implement pagination on the product list so it loads faster and is easier to browse.”
+* “Create a user profile page where people can view and edit their information.”
+* “Add a Scroll to Top button that appears when users scroll down the page.”
+Migration
+* “Upgrade the project to React Router v6 and update all routes accordingly.”
+* “Convert all class components to functional components using React hooks.”
+* “Replace deprecated lifecycle methods like componentWillMount with useEffect.”
+* “Upgrade Axios to version 1.6 and refactor API calls to match the new syntax.”
+* “Migrate the build setup from Webpack 4 to Vite 5 for faster development.”
+* “Replace Moment.js with Day.js to reduce bundle size while keeping identical date formats, parsing, and timezone behavior.”
+Performance Optimization  (return to TOC)
+* “Optimize the dashboard so it loads 1,000+ rows in under a second.”
+* “Enable lazy loading for images in the gallery to improve page performance.”
+* “Cache API responses to make data loading faster and reduce server requests.”
+* “Add a debounce function to the search input to prevent excessive API calls.”
+* “Refactor the data-processing logic to remove nested loops and make it run faster.”
+Maintenance
+* “Update all outdated dependencies to their latest stable versions.”
+* “Add ESLint and Prettier configuration so the code style stays consistent.”
+* “Improve error logging in API routes so debugging is easier.”
+Testing Enhancement
+* “Add unit tests for the authentication and session management modules.”
+* “Add test coverage reports to the project to track untested files and functions.”
+Appendix: Useful Resources  (return to TOC)
+Environment Setup
+Before getting started with the project, both Cursor and Docker must be properly set up and running. Here is a quick guide to make sure your environment is properly set up.
+Cursor
+* Ensure Cursor is installed and updated, or download it here, and accept the invitation to the cursor license here.
+* Go to the Key Manager: https://cursor-intelligence-service.outlier.ai/key-manager
+* Click on View API Key
+* Open Cursor Settings → Models
+* Disable all models, and add:
+   * gpt-oss-120b-bedrock
+   * qwen3-235b-a22b-instruct-2507-scale
+* Enable OpenAI API Key; paste in your API Key and Override Base URL with https://cursor-intelligence-api.outlier.ai/api/v1
+* Click "Verify".
+* Test these models in Cursor now.
+Docker
+* Make sure Docker is installed and up to date. If you don't have it yet, follow this guide.
+* Ensure Docker has enough RAM and disk space to run containers smoothly.
+* Clean up unused images and containers regularly to free up space and avoid build errors.
+Common errors:
+* Use this Link to see the common errors for this project.
+Appendix: Dockerfile Templates  (return to TOC)
+Base.dockerfile template
+###############################################
+# BASE IMAGE
+###############################################
+# TODO: Choose appropriate base image
+# FROM <base-image>:<tag>
+###############################################
+# WORKING DIRECTORY
+###############################################
+# Set working directory, the repo should always be cloned into /app
+# DO NOT MODIFY THIS SECTIONs
+RUN mkdir /app
+WORKDIR /app
+###############################################
+# SYSTEM DEPENDENCIES
+###############################################
+# TODO: Install required system dependencies
+# RUN apt-get update && apt-get install -y git <other-required-packages>
+###############################################
+# REPO SETUP
+###############################################
+# TODO: ONLY MODIFY THE REPO_URL PART. (Exception: Additional git config or repo structure commands may be added if required)
+RUN git clone <repo_url> .
+RUN LATEST_COMMIT=$(git rev-list -n 1 HEAD) && git reset --hard $LATEST_COMMIT
+###############################################
+# PROJECT DEPENDENCIES AND CONFIGURATION
+###############################################
+# Install any project dependencies here.
+###############################################
+# ENTRYPOINT / CMD
+###############################################
+# ENTRYPOINT should always be /bin/bash,. If the build and test commands are set as CMD or ENTRYPOINT, convert them to RUN commands and move them to the previous sections
+ENTRYPOINT ["/bin/bash"]
+Instance.dockerfile template
+
+
+FROM <base-image>
+###############################################
+# REPO SETUP
+###############################################
+# DO NOT MODIFY THIS SECTION (Exception: Additional git config or repo structure commands may be added if required)
+WORKDIR /app
+RUN LATEST_COMMIT=$(git rev-list -n 1 HEAD) && git checkout $LATEST_COMMIT
+RUN --mount=type=bind,source=patches/basetoinstance.patch,target=/tmp/basetoinstance.patch \
+    if grep -q '^diff' /tmp/basetoinstance.patch 2>/dev/null; then \
+        git apply --whitespace=fix /tmp/basetoinstance.patch; \
+    else \
+        echo "basetoinstance.patch is empty or has no diffs, skipping..."; \
+    fi
+    
+###############################################
+# PROJECT DEPENDENCIES AND CONFIGURATION
+###############################################
+# Install any project dependencies here. 
+# Normally this is fine to leave empty, but in rare cases, 
+# you may have to install the same dependencies as in the base dockerfile
+
+Appendix: Script Templates  (return to TOC)
+Template for run_script.sh
+#!/bin/bash
+set -e
+
+
+# Customize these variables as needed
+WORKING_DIR="/app"
+TEST_PATCH="${TEST_PATCH:-/app/patches/test_patch.patch}"
+GOLD_PATCH="${GOLD_PATCH:-/app/patches/gold_patch.patch}"
+RAW_OUTPUT_FILE="${RAW_OUTPUT_FILE:-/app/test_output_raw.txt}"
+
+
+# Utility function to apply patches
+apply_patch() {
+    local patch_file="$1"
+    echo "=== Applying patch: $patch_file ==="
+    git apply --ignore-whitespace "$patch_file"
+    echo "Patch applied successfully"
+}
+
+
+#=======================================================================
+# MAIN TEST EXECUTION
+#=======================================================================
+
+
+echo "=========================================="
+echo "Running Tests"
+echo "=========================================="
+
+
+cd "$WORKING_DIR"
+
+
+# Reset raw output file
+: > "$RAW_OUTPUT_FILE"
+
+
+#=======================================================================
+# SETUP: Apply Test Patch
+#=======================================================================
+
+
+echo ""
+echo "=== Adding Tests ==="
+apply_patch "$TEST_PATCH"
+
+
+#=======================================================================
+# PHASE 1: Test BROKEN Code (Before Fix)
+#=======================================================================
+
+
+echo ""
+echo "=========================================="
+echo "PHASE 1: Testing BROKEN State"
+echo "=========================================="
+echo ""
+
+
+# Marker for parser
+echo "=== PHASE 1 START ===" | tee -a "$RAW_OUTPUT_FILE"
+
+
+echo "=== Running Tests on Broken State ==="
+# Run your test commands here:
+npm test 2>&1 | tee -a "$RAW_OUTPUT_FILE" || true
+echo ""
+
+
+#=======================================================================
+# PHASE 2: Apply Fix and Re-test
+#=======================================================================
+
+
+echo ""
+echo "=========================================="
+echo "PHASE 2: Applying Fix and Re-testing on FIXED State"
+echo "=========================================="
+echo ""
+echo "=== Applying Gold Patch ==="
+apply_patch "$GOLD_PATCH"
+
+
+#=======================================================================
+# PHASE 2: Test FIXED State
+#=======================================================================
+
+
+echo ""
+# Marker for parser
+echo "=== PHASE 2 START ===" | tee -a "$RAW_OUTPUT_FILE"
+
+
+echo "=== Running Tests on Fixed State ==="
+# Run the test commands here (should pass now):
+npm test 2>&1 | tee -a "$RAW_OUTPUT_FILE" || true
+
+
+#=======================================================================
+# COMPLETION
+#=======================================================================
+
+
+echo ""
+echo "=========================================="
+echo "Test Execution Complete"
+echo "=========================================="
+
+
+exit 0
+Template for parse_results.sh  (return to TOC)
+#!/bin/bash
+
+
+# Expected input: a temporary raw log file created by run_script.sh
+RAW_OUTPUT_FILE="/app/test_output_raw.txt"
+JSON_OUTPUT_FILE="/app/test_results.json"
+
+
+# Arrays to hold results
+phase1_results=()
+phase2_results=()
+
+
+# Helper function to convert status to JSON entries
+make_json_entry() {
+    local name="$1"
+    local status="$2"
+    echo "{\"name\": \"${name}\", \"status\": \"${status}\"}"
+}
+
+
+# Parse the raw output
+current_phase=""
+
+
+while IFS= read -r line; do
+    if [[ "$line" == "=== PHASE 1 START ===" ]]; then
+        current_phase="1"
+        continue
+    fi
+    if [[ "$line" == "=== PHASE 2 START ===" ]]; then
+        current_phase="2"
+        continue
+    fi
+
+
+    # Expected line format:
+    # <test_path> | <test_title> :: <PASSED/FAILED>
+    if [[ "$line" == *"::"* ]]; then
+        test_name=$(echo "$line" | cut -d':' -f1 | xargs)
+        test_status=$(echo "$line" | awk -F'::' '{print $2}' | xargs)
+
+
+        json_entry=$(make_json_entry "$test_name" "$test_status")
+
+
+        if [[ "$current_phase" == "1" ]]; then
+            phase1_results+=("$json_entry")
+        elif [[ "$current_phase" == "2" ]]; then
+            phase2_results+=("$json_entry")
+        fi
+    fi
+done < "$RAW_OUTPUT_FILE"
+
+
+# Determine overall result
+# SUCCESS if: Phase 1 F2P all fail AND P2P all pass, Phase 2 all pass
+overall="FAILURE"
+
+
+# Separate F2P and P2P tests for phase 1
+phase1_f2p=()
+phase1_p2p=()
+for entry in "${phase1_results[@]}"; do
+    if [[ "$entry" == *".f2p.test.js"* ]] || [[ "$entry" == *".f2p.test.ts"* ]]; then
+        phase1_f2p+=("$entry")
+    elif [[ "$entry" == *".p2p.test.js"* ]] || [[ "$entry" == *".p2p.test.ts"* ]]; then
+        phase1_p2p+=("$entry")
+    fi
+done
+
+
+# Check Phase 1: F2P should all FAIL, P2P should all PASS
+phase1_f2p_all_failed=true
+phase1_p2p_all_passed=true
+
+
+for entry in "${phase1_f2p[@]}"; do
+    if [[ "$entry" != *"FAILED"* ]]; then
+        phase1_f2p_all_failed=false
+        break
+    fi
+done
+
+
+for entry in "${phase1_p2p[@]}"; do
+    if [[ "$entry" != *"PASSED"* ]]; then
+        phase1_p2p_all_passed=false
+        break
+    fi
+done
+
+
+# Check Phase 2: All tests should PASS
+phase2_all_passed=true
+for entry in "${phase2_results[@]}"; do
+    if [[ "$entry" != *"PASSED"* ]]; then
+        phase2_all_passed=false
+        break
+    fi
+done
+
+
+# Overall SUCCESS if all conditions met
+if [ ${#phase1_f2p[@]} -gt 0 ] && [ ${#phase1_p2p[@]} -gt 0 ] && [ ${#phase2_results[@]} -gt 0 ]; then
+    if $phase1_f2p_all_failed && $phase1_p2p_all_passed && $phase2_all_passed; then
+        overall="SUCCESS"
+    fi
+fi
+
+
+# Produce the final JSON
+{
+    echo "{"
+    echo "  \"phase_1\": ["
+    printf "    %s\n" "$(IFS=$',\n    '; echo "${phase1_results[*]}")"
+    echo "  ],"
+    echo "  \"phase_2\": ["
+    printf "    %s\n" "$(IFS=$',\n    '; echo "${phase2_results[*]}")"
+    echo "  ],"
+    echo "  \"overall_result\": \"${overall}\""
+    echo "}"
+} > "$JSON_OUTPUT_FILE"
+
+
+# Also print it to stdout for external tools
+cat "$JSON_OUTPUT_FILE"
+
+Appendix: Validation Script  (return to TOC)
+
+
+#!/usr/bin/env python3
+"""
+Local Issue Invention Validation Script
+
+
+This script performs the same validation steps as the Temporal workflow but runs
+entirely locally using plain Docker. No ECR, no Dagger, no Temporal - just Docker.
+
+
+Usage Command:
+    python local-validate-issue-invention.py \
+        --base-dockerfile ./dockerfiles/base.Dockerfile \
+        --instance-dockerfile ./dockerfiles/instance.Dockerfile \
+        --run-script ./scripts/run_script.sh \
+        --parsing-script ./scripts/parse_results.sh \
+        --gold-patch ./patches/gold_patch.patch \
+        --test-patch ./patches/test_patch.patch \
+        --output ./test_results.json
+"""
+
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import uuid
+from pathlib import Path
+
+
+
+
+def log(message: str, level: str = "INFO"):
+    """Print a formatted log message."""
+    colors = {
+        "INFO": "\033[94m",    # Blue
+        "SUCCESS": "\033[92m", # Green
+        "ERROR": "\033[91m",   # Red
+        "WARN": "\033[93m",    # Yellow
+        "STEP": "\033[95m",    # Magenta
+    }
+    reset = "\033[0m"
+    color = colors.get(level, "")
+    print(f"{color}[{level}]{reset} {message}")
+
+
+
+
+def run_command(
+    cmd: list[str], 
+    check: bool = True, 
+    capture_output: bool = False,
+    show_output_on_error: bool = True
+) -> subprocess.CompletedProcess:
+    """Run a shell command and optionally capture output."""
+    log(f"Running: {' '.join(cmd)}")
+    result = subprocess.run(cmd, check=False, capture_output=capture_output, text=True)
+    
+    if result.returncode != 0 and show_output_on_error and capture_output:
+        if result.stdout:
+            print("\n--- Command stdout ---")
+            print(result.stdout)
+        if result.stderr:
+            print("\n--- Command stderr ---")
+            print(result.stderr)
+    
+    if check and result.returncode != 0:
+        raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
+    
+    return result
+
+
+
+
+def rewrite_dockerfile_from(dockerfile_content: str, new_base_image: str) -> str:
+    """
+    Rewrite the FROM clause in a Dockerfile to use a different base image.
+    Same logic as rewriteDockerfileFrom in dagger-helpers.ts
+    """
+    return re.sub(r'^FROM\s+.+$', f'FROM {new_base_image}', dockerfile_content, count=1, flags=re.MULTILINE | re.IGNORECASE)
+
+
+
+
+def build_image(dockerfile_path: Path, tag: str, dockerfile_content: str | None = None, step_name: str = "image") -> tuple[bool, str]:
+    """
+    Build a Docker image from a Dockerfile.
+    
+    If dockerfile_content is provided, write it to a temp file and build from there.
+    Otherwise, build directly from dockerfile_path.
+    
+    Returns (success, error_message)
+    """
+    try:
+        build_cmd = ['docker', 'build', '-t', tag, '.']
+        
+        if dockerfile_content is not None:
+            # Write modified dockerfile to temp file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.Dockerfile', delete=False) as f:
+                f.write(dockerfile_content)
+                temp_dockerfile = f.name
+            
+            build_cmd = ['docker', 'build', '-f', temp_dockerfile, '-t', tag, '.']
+            
+            try:
+                result = subprocess.run(
+                    build_cmd,
+                    capture_output=True,
+                    text=True
+                )
+                
+                if result.returncode != 0:
+                    error_msg = f"Docker build failed for {step_name}"
+                    log(error_msg, "ERROR")
+                    log(f"Exit code: {result.returncode}", "ERROR")
+                    
+                    if result.stdout:
+                        print(f"\n{'=' * 60}")
+                        print(f"BUILD OUTPUT ({step_name}):")
+                        print("=" * 60)
+                        print(result.stdout)
+                    
+                    if result.stderr:
+                        print(f"\n{'=' * 60}")
+                        print(f"BUILD ERRORS ({step_name}):")
+                        print("=" * 60)
+                        print(result.stderr)
+                    
+                    return False, f"{error_msg}: exit code {result.returncode}"
+                    
+            finally:
+                os.unlink(temp_dockerfile)
+        else:
+            build_cmd = ['docker', 'build', '-f', str(dockerfile_path), '-t', tag, '.']
+            
+            result = subprocess.run(
+                build_cmd,
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode != 0:
+                error_msg = f"Docker build failed for {step_name}"
+                log(error_msg, "ERROR")
+                log(f"Exit code: {result.returncode}", "ERROR")
+                
+                if result.stdout:
+                    print(f"\n{'=' * 60}")
+                    print(f"BUILD OUTPUT ({step_name}):")
+                    print("=" * 60)
+                    print(result.stdout)
+                
+                if result.stderr:
+                    print(f"\n{'=' * 60}")
+                    print(f"BUILD ERRORS ({step_name}):")
+                    print("=" * 60)
+                    print(result.stderr)
+                
+                return False, f"{error_msg}: exit code {result.returncode}"
+        
+        return True, ""
+        
+    except Exception as e:
+        error_msg = f"Unexpected error building {step_name}: {e}"
+        log(error_msg, "ERROR")
+        return False, error_msg
+
+
+
+
+def run_validation_container(
+    instance_image_tag: str,
+    run_script_path: Path,
+    parsing_script_path: Path,
+    gold_patch_path: Path,
+    test_patch_path: Path,
+) -> tuple[bool, str | None, str]:
+    """
+    Run the validation container with scripts and patches mounted as volumes.
+    
+    Returns (success, results_json_content, error_message)
+    """
+    container_name = f"issue-invention-validation-{uuid.uuid4().hex[:8]}"
+    
+    # Convert to absolute paths for Docker volume mounts
+    run_script_abs = run_script_path.resolve()
+    parsing_script_abs = parsing_script_path.resolve()
+    gold_patch_abs = gold_patch_path.resolve()
+    test_patch_abs = test_patch_path.resolve()
+    
+    def get_container_logs() -> tuple[str, str]:
+        """Get stdout and stderr from the container."""
+        logs_result = subprocess.run(
+            ['docker', 'logs', container_name],
+            capture_output=True,
+            text=True
+        )
+        return logs_result.stdout or "", logs_result.stderr or ""
+    
+    def print_container_logs(context: str = ""):
+        """Print container logs for debugging."""
+        stdout, stderr = get_container_logs()
+        if stdout or stderr:
+            print(f"\n{'=' * 60}")
+            print(f"CONTAINER LOGS{' - ' + context if context else ''}:")
+            print("=" * 60)
+            if stdout:
+                print("\n--- stdout ---")
+                print(stdout)
+            if stderr:
+                print("\n--- stderr ---")
+                print(stderr)
+            print("=" * 60)
+    
+    try:
+        # Run container with scripts/patches mounted as volumes
+        # The container will execute the validation and exit
+        log("Running validation container...", "STEP")
+        log(f"Container name: {container_name}")
+        
+        validation_cmd = (
+            'mkdir -p /app/scripts /app/patches && '
+            'cp /mnt/run_script.sh /app/scripts/run_script.sh && '
+            'cp /mnt/parse_results.sh /app/scripts/parse_results.sh && '
+            'cp /mnt/gold_patch.patch /app/patches/gold_patch.patch && '
+            'cp /mnt/test_patch.patch /app/patches/test_patch.patch && '
+            'chmod +x /app/scripts/run_script.sh /app/scripts/parse_results.sh && '
+            '/app/scripts/run_script.sh && /app/scripts/parse_results.sh'
+        )
+        
+        docker_cmd = [
+            'docker', 'run',
+            '--name', container_name,
+            '-v', f'{run_script_abs}:/mnt/run_script.sh:ro',
+            '-v', f'{parsing_script_abs}:/mnt/parse_results.sh:ro',
+            '-v', f'{gold_patch_abs}:/mnt/gold_patch.patch:ro',
+            '-v', f'{test_patch_abs}:/mnt/test_patch.patch:ro',
+            '--entrypoint', '/bin/bash',
+            instance_image_tag,
+            '-c', validation_cmd
+        ]
+        
+        log(f"Running: docker run --name {container_name} ...")
+        result = subprocess.run(docker_cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            log(f"Validation scripts exited with code {result.returncode}", "WARN")
+            log("This may be expected if tests are supposed to fail in Phase 1", "INFO")
+        
+        # Show real-time output from the run
+        if result.stdout:
+            print("\n--- Validation Output ---")
+            print(result.stdout)
+        if result.stderr:
+            print("\n--- Validation Errors ---")
+            print(result.stderr)
+        
+        # Try to extract results JSON from the stopped container
+        log("Extracting results from container...")
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            temp_json_path = f.name
+        
+        cp_result = subprocess.run(
+            ['docker', 'cp', f'{container_name}:/app/test_results.json', temp_json_path],
+            capture_output=True,
+            text=True
+        )
+        
+        if cp_result.returncode != 0:
+            error_msg = "Failed to extract /app/test_results.json from container"
+            log(error_msg, "ERROR")
+            log("The validation scripts may have failed before creating the results file", "ERROR")
+            
+            # Show container logs to help debug
+            print_container_logs("validation failure")
+            
+            if cp_result.stderr:
+                log(f"docker cp error: {cp_result.stderr}", "ERROR")
+            
+            os.unlink(temp_json_path)
+            return False, None, error_msg
+        
+        with open(temp_json_path, 'r') as f:
+            results_json = f.read()
+        
+        os.unlink(temp_json_path)
+        
+        if not results_json.strip():
+            error_msg = "Results file is empty"
+            log(error_msg, "ERROR")
+            print_container_logs("empty results")
+            return False, None, error_msg
+        
+        return True, results_json, ""
+        
+    except Exception as e:
+        error_msg = f"Container operation failed: {e}"
+        log(error_msg, "ERROR")
+        print_container_logs("exception")
+        return False, None, error_msg
+    finally:
+        # Cleanup: remove container
+        log("Cleaning up container...")
+        subprocess.run(['docker', 'rm', container_name], check=False, capture_output=True)
+
+
+
+
+def display_results(results_json: str, output_path: Path):
+    """Parse, display, and save validation results."""
+    try:
+        results = json.loads(results_json)
+        
+        # Write results to output file
+        with open(output_path, 'w') as f:
+            json.dump(results, f, indent=2)
+        log(f"Results saved to: {output_path}", "SUCCESS")
+        
+        print("\n" + "=" * 60)
+        log("VALIDATION RESULTS", "STEP")
+        print("=" * 60)
+        
+        # Display summary if available
+        if 'summary' in results:
+            summary = results['summary']
+            print("\n--- Phase 1 (Before Fix) ---")
+            print(f"  Total Tests: {summary.get('phase_1_total', 'N/A')}")
+            print(f"  Passed: {summary.get('phase_1_passed', 'N/A')}")
+            print(f"  Failed: {summary.get('phase_1_failed', 'N/A')}")
+            
+            print("\n--- Phase 2 (After Fix) ---")
+            print(f"  Total Tests: {summary.get('phase_2_total', 'N/A')}")
+            print(f"  Passed: {summary.get('phase_2_passed', 'N/A')}")
+            print(f"  Failed: {summary.get('phase_2_failed', 'N/A')}")
+        
+        # Display validation status
+        if 'validation' in results:
+            validation = results['validation']
+            print("\n--- Validation Status ---")
+            phase1_valid = validation.get('phase_1_valid', False)
+            phase2_valid = validation.get('phase_2_valid', False)
+            print(f"  Phase 1 Valid: {'✓' if phase1_valid else '✗'}")
+            print(f"  Phase 2 Valid: {'✓' if phase2_valid else '✗'}")
+        
+        # Display overall result
+        overall = results.get('overall_result', 'UNKNOWN')
+        print("\n" + "=" * 60)
+        if overall == 'SUCCESS':
+            log(f"OVERALL RESULT: {overall}", "SUCCESS")
+        else:
+            log(f"OVERALL RESULT: {overall}", "ERROR")
+        print("=" * 60 + "\n")
+        
+        return overall == 'SUCCESS'
+        
+    except json.JSONDecodeError as e:
+        log(f"Failed to parse results JSON: {e}", "ERROR")
+        print("Raw output:")
+        print(results_json)
+        return False
+
+
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Local Issue Invention Validation - runs validation using plain Docker",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__
+    )
+    
+    parser.add_argument(
+        '--base-dockerfile',
+        type=Path,
+        required=True,
+        help='Path to base Dockerfile'
+    )
+    parser.add_argument(
+        '--instance-dockerfile',
+        type=Path,
+        required=True,
+        help='Path to instance Dockerfile'
+    )
+    parser.add_argument(
+        '--run-script',
+        type=Path,
+        required=True,
+        help='Path to run script (will be copied to /app/scripts/run_script.sh)'
+    )
+    parser.add_argument(
+        '--parsing-script',
+        type=Path,
+        required=True,
+        help='Path to parsing script (will be copied to /app/scripts/parse_results.sh)'
+    )
+    parser.add_argument(
+        '--gold-patch',
+        type=Path,
+        required=True,
+        help='Path to gold patch file (will be copied to /app/patches/gold_patch.patch)'
+    )
+    parser.add_argument(
+        '--test-patch',
+        type=Path,
+        required=True,
+        help='Path to test patch file (will be copied to /app/patches/test_patch.patch)'
+    )
+    parser.add_argument(
+        '--output',
+        type=Path,
+        required=True,
+        help='Path to write the output results JSON file'
+    )
+    
+    args = parser.parse_args()
+    
+    # Validate all input files exist
+    for arg_name, path in [
+        ('base-dockerfile', args.base_dockerfile),
+        ('instance-dockerfile', args.instance_dockerfile),
+        ('run-script', args.run_script),
+        ('parsing-script', args.parsing_script),
+        ('gold-patch', args.gold_patch),
+        ('test-patch', args.test_patch),
+    ]:
+        if not path.exists():
+            log(f"File not found: {path} (--{arg_name})", "ERROR")
+            sys.exit(1)
+    
+    # Generate unique tags for this run
+    run_id = uuid.uuid4().hex[:8]
+    base_image_tag = f"issue-invention-base:{run_id}"
+    instance_image_tag = f"issue-invention-instance:{run_id}"
+    
+    print("\n" + "=" * 60)
+    log("LOCAL ISSUE INVENTION VALIDATION", "STEP")
+    print("=" * 60)
+    print(f"Run ID: {run_id}")
+    print(f"Base Dockerfile: {args.base_dockerfile}")
+    print(f"Instance Dockerfile: {args.instance_dockerfile}")
+    print(f"Run Script: {args.run_script}")
+    print(f"Parsing Script: {args.parsing_script}")
+    print(f"Gold Patch: {args.gold_patch}")
+    print(f"Test Patch: {args.test_patch}")
+    print(f"Output: {args.output}")
+    print("=" * 60 + "\n")
+    
+    # Step 1: Build base image
+    print("\n" + "=" * 60)
+    log("STEP 1/4: Building base image", "STEP")
+    print("=" * 60)
+    log(f"Dockerfile: {args.base_dockerfile}")
+    log(f"Tag: {base_image_tag}")
+    
+    success, error_msg = build_image(args.base_dockerfile, base_image_tag, step_name="base image")
+    if not success:
+        print("\n" + "!" * 60)
+        log("FAILED AT STEP 1: Building base image", "ERROR")
+        log(f"Error: {error_msg}", "ERROR")
+        log("Check your base Dockerfile for syntax errors or missing dependencies", "ERROR")
+        print("!" * 60)
+        sys.exit(1)
+    log(f"Base image built successfully: {base_image_tag}", "SUCCESS")
+    
+    # Step 2: Rewrite instance Dockerfile and build
+    print("\n" + "=" * 60)
+    log("STEP 2/4: Building instance image", "STEP")
+    print("=" * 60)
+    instance_dockerfile_content = args.instance_dockerfile.read_text()
+    rewritten_dockerfile = rewrite_dockerfile_from(instance_dockerfile_content, base_image_tag)
+    log(f"Dockerfile: {args.instance_dockerfile}")
+    log(f"Rewrote FROM clause to reference: {base_image_tag}")
+    log(f"Tag: {instance_image_tag}")
+    
+    success, error_msg = build_image(
+        args.instance_dockerfile, 
+        instance_image_tag, 
+        dockerfile_content=rewritten_dockerfile,
+        step_name="instance image"
+    )
+    if not success:
+        print("\n" + "!" * 60)
+        log("FAILED AT STEP 2: Building instance image", "ERROR")
+        log(f"Error: {error_msg}", "ERROR")
+        log("Check your instance Dockerfile for syntax errors", "ERROR")
+        print("!" * 60)
+        sys.exit(1)
+    log(f"Instance image built successfully: {instance_image_tag}", "SUCCESS")
+    
+    # Step 3: Run validation container
+    print("\n" + "=" * 60)
+    log("STEP 3/4: Running validation scripts", "STEP")
+    print("=" * 60)
+    log(f"Run script: {args.run_script} -> /app/scripts/run_script.sh")
+    log(f"Parse script: {args.parsing_script} -> /app/scripts/parse_results.sh")
+    log(f"Gold patch: {args.gold_patch} -> /app/patches/gold_patch.patch")
+    log(f"Test patch: {args.test_patch} -> /app/patches/test_patch.patch")
+    
+    success, results_json, error_msg = run_validation_container(
+        instance_image_tag=instance_image_tag,
+        run_script_path=args.run_script,
+        parsing_script_path=args.parsing_script,
+        gold_patch_path=args.gold_patch,
+        test_patch_path=args.test_patch,
+    )
+    
+    if not success or results_json is None:
+        print("\n" + "!" * 60)
+        log("FAILED AT STEP 3: Running validation scripts", "ERROR")
+        log(f"Error: {error_msg}", "ERROR")
+        log("Check your run_script.sh and parse_results.sh for errors", "ERROR")
+        log("Ensure the scripts create /app/test_results.json", "ERROR")
+        print("!" * 60)
+        sys.exit(1)
+    
+    log("Validation scripts completed successfully", "SUCCESS")
+    
+    # Step 4: Display and save results
+    print("\n" + "=" * 60)
+    log("STEP 4/4: Processing and saving results", "STEP")
+    print("=" * 60)
+    validation_passed = display_results(results_json, args.output)
+    
+    # Cleanup images (optional, comment out to keep for debugging)
+    log("\nCleaning up Docker images...")
+    subprocess.run(['docker', 'rmi', base_image_tag], check=False, capture_output=True)
+    subprocess.run(['docker', 'rmi', instance_image_tag], check=False, capture_output=True)
+    
+    if validation_passed:
+        log("Validation completed successfully!", "SUCCESS")
+        sys.exit(0)
+    else:
+        log("Validation failed", "ERROR")
+        sys.exit(1)
+
+
+
+
+if __name__ == '__main__':
+    main()
+
+
+
+  
+
+[a]what guide? add link
+[b]Even when subjective, add some sort of guidance
+[c]make sure the parser works with every language
+[d]same as before, make sure it works
+[e]is this correct?
+[f]Probably will be changed with new autobuild
+[g]This is a bit confusing when combined with the requirement that the Correctness dimension must have at least 10% of the total weight — unit tests are required for all tasks, right, so the weight for Correctness will always be 20 - 30% minimum?
