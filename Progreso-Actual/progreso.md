@@ -85,4 +85,10 @@ _Ninguno por ahora._
 
 > Espacio para que el agente deje notas sobre decisiones tomadas o contexto importante.
 
-_Esperando URL del repo asignado para comenzar Paso 1._
+**2026-05-13:** Las referencias del proyecto fueron auditadas contra las guías oficiales de Outlier.
+Se corrigieron dos bugs críticos en los archivos de referencia:
+- `references/04_docker_scripts.md` — JSON keys estaban en español, ahora en inglés
+- `references/05_to_08_remaining_steps.md` — `criteria_category` estaba en español, ahora en inglés
+
+Los archivos de referencia están ahora alineados con la guía oficial.
+Siguiente paso: esperar URL del repo asignado para comenzar Paso 1.

@@ -165,6 +165,23 @@ Marca cada casilla a medida que la verificas.
 
 **Calificación asignada:** ___/5
 
+### Escala de Calificaciones
+
+| Calificación | Cuándo usarla |
+|---|---|
+| **1 – Inaceptable** | Spam, generado por LLM, o esfuerzo mínimo. Debe rehacerse completamente. |
+| **2 – Problemas mayores** | Esfuerzo evidente pero falla fundamentalmente: prompt confuso o muy simple, gold patch con falla grave, rúbrica a reescribir. |
+| **3 – Algunos problemas** | Cumple requisitos básicos pero necesitó ediciones moderadas: pequeños ajustes al prompt, correcciones menores al patch, reescritura moderada de rúbrica. |
+| **4 – Problemas menores** | Solo ediciones menores: corregir typos, reescribir 1-2 criterios, pequeños errores. |
+| **5 – Perfecto** | Siguió todas las guías sin necesitar ediciones. |
+
+### Guía de Feedback (siempre incluir los 4 elementos)
+
+- **Específico** — nombra partes concretas donde hiciste cambios
+- **Conciso** — organizado y enfocado
+- **Accionable** — explica cómo mejorar en tareas futuras
+- **Alentador** — menciona tanto fortalezas como áreas de mejora
+
 **Justificación:**
 ```
 [Escribir breve justificación de la calificación]
@@ -172,11 +189,13 @@ Marca cada casilla a medida que la verificas.
 
 **Feedback para el participante:**
 ```
-✅ Fortalezas:
+Fortalezas:
 -
 
-🔧 Áreas de mejora:
+Areas de mejora:
 -
 
-📝 Nota general:
+Nota general:
 ```
+
+> Para las dimensiones detalladas de evaluación (lo que los revisores miran exactamente), ver `references/reviewer-grading-rubric.md`

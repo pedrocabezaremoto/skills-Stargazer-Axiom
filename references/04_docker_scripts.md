@@ -35,32 +35,71 @@ Los Dockerfiles y scripts garantizan la **reproducibilidad** del trabajo. Hay un
 #!/bin/bash
 set -e
 
-WORKDIR="/app"
-SCRIPTS_DIR="/app/scripts"
-PATCHES_DIR="/app/patches"
+# Customize these variables as needed
+WORKING_DIR="/app"
+TEST_PATCH="${TEST_PATCH:-/app/patches/test_patch.patch}"
+GOLD_PATCH="${GOLD_PATCH:-/app/patches/gold_patch.patch}"
+RAW_OUTPUT_FILE="${RAW_OUTPUT_FILE:-/app/test_output_raw.txt}"
 
-cd "$WORKDIR"
+# Utility function to apply patches
+apply_patch() {
+    local patch_file="$1"
+    echo "=== Applying patch: $patch_file ==="
+    git apply --ignore-whitespace "$patch_file"
+    echo "Patch applied successfully"
+}
 
-echo "=== APLICANDO TEST PATCH ==="
-git apply --ignore-whitespace "$PATCHES_DIR/test_patch.patch"
+echo "=========================================="
+echo "Running Tests"
+echo "=========================================="
+
+cd "$WORKING_DIR"
+
+# Reset raw output file
+: > "$RAW_OUTPUT_FILE"
 
 echo ""
-echo "=== FASE 1: ESTADO DEFECTUOSO ==="
-# Ejecuta tus pruebas aquí — ejemplo para Jest:
-npx jest --testPathPattern="(f2p|p2p)\.test\." --no-coverage 2>&1 || true
+echo "=== Adding Tests ==="
+apply_patch "$TEST_PATCH"
 
 echo ""
-echo "=== APLICANDO GOLD PATCH ==="
-git apply --ignore-whitespace "$PATCHES_DIR/gold_patch.patch"
+echo "=========================================="
+echo "PHASE 1: Testing BROKEN State"
+echo "=========================================="
+echo ""
+
+# Marker for parser
+echo "=== PHASE 1 START ===" | tee -a "$RAW_OUTPUT_FILE"
+echo "=== Running Tests on Broken State ==="
+# Run your test commands here:
+npm test 2>&1 | tee -a "$RAW_OUTPUT_FILE" || true
 
 echo ""
-echo "=== FASE 2: ESTADO CORREGIDO ==="
-# Ejecuta tus pruebas aquí nuevamente:
-npx jest --testPathPattern="(f2p|p2p)\.test\." --no-coverage 2>&1 || true
+echo "=========================================="
+echo "PHASE 2: Applying Fix and Re-testing on FIXED State"
+echo "=========================================="
+echo ""
+
+echo "=== Applying Gold Patch ==="
+apply_patch "$GOLD_PATCH"
 
 echo ""
-echo "=== SCRIPT COMPLETADO ==="
+# Marker for parser
+echo "=== PHASE 2 START ===" | tee -a "$RAW_OUTPUT_FILE"
+echo "=== Running Tests on Fixed State ==="
+# Run the test commands here (should pass now):
+npm test 2>&1 | tee -a "$RAW_OUTPUT_FILE" || true
+
+echo ""
+echo "=========================================="
+echo "Test Execution Complete"
+echo "=========================================="
+
+exit 0
 ```
+
+> ⚠️ CRÍTICO: Los markers `=== PHASE 1 START ===` y `=== PHASE 2 START ===` deben escribirse al `RAW_OUTPUT_FILE` con `tee -a`. `parse_results.sh` los usa para separar las fases.
+> ⚠️ CRÍTICO: El output de los tests DEBE capturarse con `tee -a "$RAW_OUTPUT_FILE"` en ambas fases.
 
 > ⚠️ IMPORTANTE: Todas las dependencias (incluyendo dependencias solo para pruebas como Playwright, Vitest, etc.) deben instalarse en `base.Dockerfile`, NO en el script.
 
@@ -72,38 +111,159 @@ echo "=== SCRIPT COMPLETADO ==="
 
 ### El script DEBE:
 
-1. Parsear la salida de `run_script.sh`
-2. Identificar resultados de Fase 1 (estado defectuoso)
-3. Identificar resultados de Fase 2 (estado fijo)
+1. Parsear la salida de `run_script.sh` desde `/app/test_output_raw.txt`
+2. Identificar resultados de Fase 1 usando el marker `=== PHASE 1 START ===`
+3. Identificar resultados de Fase 2 usando el marker `=== PHASE 2 START ===`
 4. Determinar el resultado general:
-   - **ÉXITO**: Todos los F2P fallan en Fase 1 + todos los P2P pasan en Fase 1 + todo pasa en Fase 2
+   - **SUCCESS**: Todos los F2P fallan en Fase 1 + todos los P2P pasan en Fase 1 + todo pasa en Fase 2
 5. Generar `test_results.json` con el formato requerido
+
+### Formato de línea esperado en el output de tests
+
+```
+<test_path> | <test_title> :: <PASSED/FAILED>
+```
+
+El parser busca líneas con `::` para extraer nombre y estado.
+
+### Template completo
+
+```bash
+#!/bin/bash
+
+# Expected input: a temporary raw log file created by run_script.sh
+RAW_OUTPUT_FILE="/app/test_output_raw.txt"
+JSON_OUTPUT_FILE="/app/test_results.json"
+
+# Arrays to hold results
+phase1_results=()
+phase2_results=()
+
+# Helper function to convert status to JSON entries
+make_json_entry() {
+    local name="$1"
+    local status="$2"
+    echo "{\"name\": \"${name}\", \"status\": \"${status}\"}"
+}
+
+# Parse the raw output
+current_phase=""
+while IFS= read -r line; do
+    if [[ "$line" == "=== PHASE 1 START ===" ]]; then
+        current_phase="1"
+        continue
+    fi
+    if [[ "$line" == "=== PHASE 2 START ===" ]]; then
+        current_phase="2"
+        continue
+    fi
+
+    # Expected line format:
+    # <test_path> | <test_title> :: <PASSED/FAILED>
+    if [[ "$line" == *"::"* ]]; then
+        test_name=$(echo "$line" | cut -d':' -f1 | xargs)
+        test_status=$(echo "$line" | awk -F'::' '{print $2}' | xargs)
+        json_entry=$(make_json_entry "$test_name" "$test_status")
+
+        if [[ "$current_phase" == "1" ]]; then
+            phase1_results+=("$json_entry")
+        elif [[ "$current_phase" == "2" ]]; then
+            phase2_results+=("$json_entry")
+        fi
+    fi
+done < "$RAW_OUTPUT_FILE"
+
+# Determine overall result
+# SUCCESS if: Phase 1 F2P all fail AND P2P all pass, Phase 2 all pass
+overall="FAILURE"
+
+# Separate F2P and P2P tests for phase 1
+phase1_f2p=()
+phase1_p2p=()
+for entry in "${phase1_results[@]}"; do
+    if [[ "$entry" == *".f2p.test.js"* ]] || [[ "$entry" == *".f2p.test.ts"* ]]; then
+        phase1_f2p+=("$entry")
+    elif [[ "$entry" == *".p2p.test.js"* ]] || [[ "$entry" == *".p2p.test.ts"* ]]; then
+        phase1_p2p+=("$entry")
+    fi
+done
+
+# Check Phase 1: F2P should all FAIL, P2P should all PASS
+phase1_f2p_all_failed=true
+phase1_p2p_all_passed=true
+
+for entry in "${phase1_f2p[@]}"; do
+    if [[ "$entry" != *"FAILED"* ]]; then
+        phase1_f2p_all_failed=false
+        break
+    fi
+done
+
+for entry in "${phase1_p2p[@]}"; do
+    if [[ "$entry" != *"PASSED"* ]]; then
+        phase1_p2p_all_passed=false
+        break
+    fi
+done
+
+# Check Phase 2: All tests should PASS
+phase2_all_passed=true
+for entry in "${phase2_results[@]}"; do
+    if [[ "$entry" != *"PASSED"* ]]; then
+        phase2_all_passed=false
+        break
+    fi
+done
+
+# Overall SUCCESS if all conditions met
+if [ ${#phase1_f2p[@]} -gt 0 ] && [ ${#phase1_p2p[@]} -gt 0 ] && [ ${#phase2_results[@]} -gt 0 ]; then
+    if $phase1_f2p_all_failed && $phase1_p2p_all_passed && $phase2_all_passed; then
+        overall="SUCCESS"
+    fi
+fi
+
+# Produce the final JSON
+{
+    echo "{"
+    echo "  \"phase_1\": ["
+    printf "    %s\n" "$(IFS=$',\n    '; echo "${phase1_results[*]}")"
+    echo "  ],"
+    echo "  \"phase_2\": ["
+    printf "    %s\n" "$(IFS=$',\n    '; echo "${phase2_results[*]}")"
+    echo "  ],"
+    echo "  \"overall_result\": \"${overall}\""
+    echo "}"
+} > "$JSON_OUTPUT_FILE"
+
+# Also print it to stdout for external tools
+cat "$JSON_OUTPUT_FILE"
+```
 
 ### Formato de salida JSON requerido
 
 ```json
 {
-  "fase_1": [
+  "phase_1": [
     {
-      "nombre": "ruta/al/archivo/prueba.f2p.test.js | título de la prueba 1",
-      "estado": "FALLIDO"
+      "name": "path/to/test/file.f2p.test.js | test title 1",
+      "status": "FAILED"
     },
     {
-      "nombre": "ruta/al/archivo/prueba.p2p.test.js | título de la prueba 2",
-      "estado": "APROBADO"
+      "name": "path/to/test/file.p2p.test.js | test title 2",
+      "status": "PASSED"
     }
   ],
-  "fase_2": [
+  "phase_2": [
     {
-      "nombre": "ruta/al/archivo/prueba.f2p.test.js | título de la prueba 1",
-      "estado": "APROBADO"
+      "name": "path/to/test/file.f2p.test.js | test title 1",
+      "status": "PASSED"
     },
     {
-      "nombre": "ruta/al/archivo/prueba.p2p.test.js | título de la prueba 2",
-      "estado": "APROBADO"
+      "name": "path/to/test/file.p2p.test.js | test title 2",
+      "status": "PASSED"
     }
   ],
-  "resultado_general": "ÉXITO"
+  "overall_result": "SUCCESS"
 }
 ```
 
@@ -132,25 +292,25 @@ echo "=== SCRIPT COMPLETADO ==="
 ### Plantilla
 
 ```dockerfile
-FROM node:20-slim
+# TODO: Choose appropriate base image
+# FROM <base-image>:<tag>
 
-# Dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Clonar repositorio
-WORKDIR /
-RUN git clone <repo_url> /app
-
+# Set working directory — the repo should always be cloned into /app
+# DO NOT MODIFY THIS SECTION
+RUN mkdir /app
 WORKDIR /app
 
-# Dependencias del proyecto
-RUN npm ci
+# TODO: Install required system dependencies
+# RUN apt-get update && apt-get install -y git <other-required-packages>
 
-# Dependencias adicionales solo para pruebas (si aplica)
-# RUN npx playwright install --with-deps
+# TODO: ONLY MODIFY THE REPO_URL PART.
+RUN git clone <repo_url> .
+RUN LATEST_COMMIT=$(git rev-list -n 1 HEAD) && git reset --hard $LATEST_COMMIT
 
+# Install any project dependencies here.
+
+# ENTRYPOINT should always be /bin/bash
+# If build/test commands are set as CMD or ENTRYPOINT, convert them to RUN commands
 ENTRYPOINT ["/bin/bash"]
 ```
 
@@ -173,21 +333,29 @@ ENTRYPOINT ["/bin/bash"]
 ### Plantilla
 
 ```dockerfile
-FROM <base_image_name>
+FROM <base-image>
 
+# DO NOT MODIFY THIS SECTION
 WORKDIR /app
-
-# Restablecer al último commit
-RUN git reset --hard HEAD
-
-# Aplicar basetoinstance.patch (maneja archivo vacío o con contenido)
-COPY patches/basetoinstance.patch /tmp/basetoinstance.patch
-RUN if [ -s /tmp/basetoinstance.patch ]; then \
-      git apply --ignore-whitespace /tmp/basetoinstance.patch; \
+RUN LATEST_COMMIT=$(git rev-list -n 1 HEAD) && git checkout $LATEST_COMMIT
+RUN \
+  --mount=type=bind,source=patches/basetoinstance.patch,target=/tmp/basetoinstance.patch \
+    if grep -q '^diff' /tmp/basetoinstance.patch 2>/dev/null; then \
+        git apply --whitespace=fix /tmp/basetoinstance.patch; \
+    else \
+        echo "basetoinstance.patch is empty or has no diffs, skipping..."; \
     fi
+
+# Install any project dependencies here.
+# Normally this is fine to leave empty, but in rare cases,
+# you may have to install the same dependencies as in the base dockerfile
 
 ENTRYPOINT ["/bin/bash"]
 ```
+
+> ⚠️ CRÍTICO: Usar `--mount=type=bind` (NO `COPY`) para el patch.
+> ⚠️ CRÍTICO: Usar `grep -q '^diff'` para verificar si el patch tiene contenido (NO `-s`).
+> ⚠️ CRÍTICO: Usar `--whitespace=fix` (NO `--ignore-whitespace`) en instance.dockerfile.
 
 ### Reglas críticas
 - Reemplaza `<base_image_name>` con el nombre real de tu imagen base

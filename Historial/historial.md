@@ -43,4 +43,49 @@
 
 ---
 
+## [2026-05-13] — Auditoría y corrección de referencias vs. guías oficiales
+
+**Qué se hizo:**
+- Se compararon las guías oficiales de Outlier (PDF en español e inglés) contra todos los archivos en `references/` y `Stargazer_Eval/Docs/`
+- Se identificaron dos bugs críticos introducidos por la traducción al español:
+  1. **JSON keys en español** en `references/04_docker_scripts.md`: `fase_1`, `fase_2`, `resultado_general`, `nombre`, `estado`, `FALLIDO/APROBADO/ÉXITO` — el sistema espera inglés
+  2. **`criteria_category` en español** en `references/05_to_08_remaining_steps.md`: `"corrección"` — el evaluador espera `"correctness"`
+- Se corrigieron ambos archivos:
+  - `04_docker_scripts.md` → JSON con keys en inglés: `phase_1`, `phase_2`, `overall_result`, `name`, `status`, `FAILED/PASSED/SUCCESS`
+  - `05_to_08_remaining_steps.md` → `criteria_category` en inglés y lista de valores válidos corregida (`correctness`, `independence`, `readability`, `efficiency`, `visual_aesthetics`)
+- Se identificó también que el Paso 8 (Stargazer_Eval) no tenía documentación completa en `05_to_08_remaining_steps.md` — ya está cubierto en ese archivo pero pendiente de ampliar con el flujo detallado
+
+**Resultado:** Referencias corregidas y alineadas con la guía oficial en inglés. Usar estos archivos como referencia para generar rubric.json y test_results.json es ahora seguro.
+
+---
+
+## [2026-05-13] — Reviewer Grading Rubric agregada al proyecto (Guía 4)
+
+**Qué se hizo:**
+- Se cotejó la Guía 4 oficial ("Reviewer Guidelines") contra los archivos del proyecto
+- Se identificó que la **Reviewer Grading Rubric** (tabla completa de dimensiones de evaluación) estaba completamente ausente del proyecto
+- Se creó `references/reviewer-grading-rubric.md` con las dimensiones completas: Prompt (Claridad, Dominio, Fallo del modelo, Alineación), Criterios de Rúbrica (Objetividad, Cobertura, Precisión, Atomicidad, Autosuficiencia, Pesos, Formato), Solución/Gold Patch, Tests, Docker & Scripts, Archivos Subidos
+- Se actualizó `checklist.md` para agregar las descripciones detalladas de calificaciones 1-5 y la Guía de Feedback (Específico, Conciso, Accionable, Alentador)
+
+**Resultado:** El proyecto ahora tiene cobertura completa de las 4 guías oficiales de Outlier.
+
+---
+
+## [2026-05-13] — Corrección de templates Dockerfile y Scripts (Guía 3)
+
+**Qué se hizo:**
+- Se cotejó la Guía 3 oficial ("Stargazer Axiom Templates") contra `references/04_docker_scripts.md`
+- Se identificaron y corrigieron 5 bugs críticos:
+  1. **Instance.dockerfile usaba `COPY`** → debe ser `--mount=type=bind` (el patch NO se copia permanentemente)
+  2. **Instance.dockerfile usaba `git reset --hard HEAD`** → debe ser `git checkout $LATEST_COMMIT`
+  3. **Instance.dockerfile usaba `-s` para verificar patch** → debe ser `grep -q '^diff'`
+  4. **Instance.dockerfile usaba `--ignore-whitespace`** → debe ser `--whitespace=fix`
+  5. **run_script.sh no tenía `RAW_OUTPUT_FILE` ni markers de fase** → parse_results.sh no podía parsear nada
+- Se agregó el template completo de `parse_results.sh` que estaba completamente ausente del proyecto
+- Se corrigió el template de `base.Dockerfile` para que coincida con la plantilla oficial (estructura con secciones comentadas, `git reset --hard $LATEST_COMMIT` después del clone)
+
+**Resultado:** Templates ahora alineados con la Guía 3 oficial. Sin estos cambios, instance.dockerfile build y el parsing de resultados fallaban.
+
+---
+
 <!-- Agregar nuevas entradas ARRIBA de esta línea, debajo del último ## -->

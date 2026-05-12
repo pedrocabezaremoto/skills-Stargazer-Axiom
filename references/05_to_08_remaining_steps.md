@@ -111,7 +111,7 @@ Un conjunto de criterios para evaluar **objetiva y detalladamente** la calidad d
     "weight": 20,
     "annotations": {
       "criteria_requirement": "Las pruebas F2P pasan después de aplicar el gold patch, verificando que [descripción del nuevo comportamiento]",
-      "criteria_category": "corrección"
+      "criteria_category": "correctness"
     }
   },
   {
@@ -120,7 +120,7 @@ Un conjunto de criterios para evaluar **objetiva y detalladamente** la calidad d
     "weight": 10,
     "annotations": {
       "criteria_requirement": "Las pruebas P2P siguen pasando después de aplicar el gold patch, confirmando que no hay regresiones",
-      "criteria_category": "corrección"
+      "criteria_category": "correctness"
     }
   },
   {
@@ -129,7 +129,7 @@ Un conjunto de criterios para evaluar **objetiva y detalladamente** la calidad d
     "weight": 15,
     "annotations": {
       "criteria_requirement": "Descripción clara y objetiva del criterio sin ambigüedad",
-      "criteria_category": "corrección"
+      "criteria_category": "correctness"
     }
   }
 ]
@@ -138,11 +138,11 @@ Un conjunto de criterios para evaluar **objetiva y detalladamente** la calidad d
 ### Identificadores válidos de `criteria_category`
 
 ```
-corrección
-independencia
-legibilidad
-eficiencia
-estética
+correctness
+independence
+readability
+efficiency
+visual_aesthetics
 ```
 
 ### Validación rápida
