@@ -10,30 +10,32 @@
 
 | Campo | Valor |
 |-------|-------|
-| Repo asignado | ⏳ Pendiente — Pedro debe proporcionar la URL |
-| Tipo de problema | ⏳ Por identificar |
-| Stack tecnológico | ⏳ Por identificar |
-| Framework de tests | ⏳ Por identificar |
-| Fecha de inicio | 2026-05-12 |
+| Repo asignado | ✅ Repo ID 635272517 — Nuton Learning App |
+| Tipo de problema | ✅ Performance Optimization |
+| Stack tecnológico | ✅ Angular 19 / TypeScript |
+| Framework de tests | ✅ Karma + Jasmine (`npm test`) |
+| Archivo objetivo | ✅ `nuton/src/app/services/cart.service.ts` |
+| Problema identificado | ✅ CartService — subtotal acumulativo (floating-point drift) |
+| Fecha de inicio | 2026-05-14 |
 
 ---
 
 ## Checklist de la Tarea
 
 ### Paso 1 — Setup y análisis del repo
-- [ ] Repo clonado en directorio de trabajo
-- [ ] Stack tecnológico identificado
-- [ ] Framework de testing identificado
-- [ ] Comando de tests identificado (`npm test` / `pytest` / etc.)
-- [ ] Archivos de configuración relevantes identificados
-- [ ] Tipo de problema definido
+- [x] Repo clonado en directorio de trabajo (`task01/`)
+- [x] Stack tecnológico identificado (Angular 19 / TypeScript)
+- [x] Framework de testing identificado (Karma + Jasmine)
+- [x] Comando de tests identificado (`npm test`)
+- [x] Archivos de configuración relevantes identificados
+- [x] Tipo de problema definido (Performance Optimization — CartService)
 
-### Paso 2 — Creación del problema
-- [ ] `issue_message.txt` redactado
-- [ ] Dificultad del problema evaluada (fácil / medio / difícil)
-- [ ] Probado con Sonnet 4.6 — al menos uno falla
-- [ ] Probado con Qwen 3.5 27b — confirmado fallo
-- [ ] Log de errores del modelo guardado
+### Paso 2 — Creación del issue
+- [x] Issue message redactado (CartService subtotal acumulativo)
+- [ ] Issue pegado en Outlier y dificultad seleccionada (Medium)
+- [ ] Prompt lanzado en Cursor con `claude-qwen3527b-scale` — esperando resultado
+- [ ] Probado con `claude-4.6-sonnet-scale` — pendiente
+- [ ] Model trace exportado y guardado (Export Transcript → .md)
 - [ ] `basetoinstance.patch` generado
 
 ### Paso 3 — Gold patch

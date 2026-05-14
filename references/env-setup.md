@@ -9,15 +9,18 @@ Antes de iniciar cualquier tarea en Stargazer, **Cursor** y **Docker** deben est
 ## Configuración de Cursor
 
 ### Instalación
-- Asegúrate de tener Cursor instalado y actualizado
-- Acepta la invitación a la licencia de Cursor desde el enlace oficial de Outlier
+- **Descargar versión 2.6 específicamente** — otras versiones no funcionan con los modelos de Outlier
+- Si ya tienes Cursor instalado, desinstala e instala la 2.6
+- Acepta la invitación al **Cursor Team Plan** — contactar QMs en el War Room de Zoom si no tienes acceso
 
 ### Configuración de modelos
 1. Abre **Cursor Settings → Models**
 2. **Desactiva** todos los modelos existentes
-3. Añade únicamente estos dos modelos:
-   - `gpt-oss-120b-bedrock`
-   - `qwen3-235b-a22b-instruct-2507-scale`
+3. Añade únicamente estos dos modelos (guía oficial 2026-05-08):
+   - `claude-qwen3-5-27b-scale`
+   - `claude-4.6-sonnet-scale`
+
+> **CAMBIO:** Los modelos anteriores `gpt-oss-120b-bedrock` y `qwen3-235b-a22b-instruct-2507-scale` eran de guías previas. La guía oficial actualizada (2026-05-08) usa los modelos arriba.
 
 ### Configuración de API Key
 1. Accede al **Key Manager**: `https://cursor-intelligence-service.outlier.ai/key-manager`

@@ -108,4 +108,28 @@
 
 ---
 
+## [2026-05-14] — Primera tarea productiva iniciada + actualización de guías
+
+**Qué se hizo:**
+- Se recibió la primera tarea real asignada en Outlier: **Repo ID 635272517** (Nuton — Angular 19 learning app)
+- Issue Type asignado: **Performance Optimization**
+- Se analizó el repo completo: stack Angular 19, TypeScript, Karma + Jasmine, API externa `https://nuton-data.vercel.app`
+- Se identificó el problema a trabajar: **CartService** — subtotal calculado de forma acumulativa en lugar de derivarse de la lista (floating-point drift)
+- Se comparó la nueva guía oficial PDF (2026-05-08) con los archivos existentes — diferencia crítica encontrada:
+  - **Modelos actualizados:** guía anterior tenía `gpt-oss-120b-bedrock` y `qwen3-235b-a22b-instruct-2507-scale`, la nueva guía oficial usa `claude-qwen3-5-27b-scale` y `claude-4.6-sonnet-scale`
+  - **Versión Cursor:** la guía especifica **versión 2.6 exacta** — no cualquier versión
+  - La guía nueva también documenta: cómo instalar deps con `beforeAll`+`execSync` en `test_patch`, generación de `rubric.json` con la plataforma, atomicidad y granularidad de rúbricas
+- Se actualizó `references/env-setup.md` con los modelos correctos y versión de Cursor
+- Pedro configuró Cursor local (desconectado del VPS) con `task01` abierto — listo para probar modelos
+
+**Estado al cierre:**
+- ✅ Repo clonado localmente en `C:\Users\Peter Head PC\Downloads\task01`
+- ✅ Cursor en modo local (desconectado de VPS) con `claude-qwen3527b-scale`
+- ✅ Issue message redactado (CartService subtotal acumulativo)
+- ✅ Cursor local configurado con `task01` abierto, archivo `cart.service.ts` visible
+- ✅ Prompt del issue lanzado en Cursor al modelo `claude-qwen3527b-scale`
+- ⏳ Pendiente: capturar respuesta del modelo, exportar trace, pegar issue en Outlier
+
+---
+
 <!-- Agregar nuevas entradas ARRIBA de esta línea, debajo del último ## -->
