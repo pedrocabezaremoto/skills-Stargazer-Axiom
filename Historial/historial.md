@@ -88,4 +88,24 @@
 
 ---
 
+## [2026-05-14] — Entorno confirmado listo + conocimiento de rúbricas ampliado
+
+**Qué se hizo:**
+- Pedro confirmó que **Cursor ya está configurado** con la API key de Outlier, modelos `gpt-oss-120b-bedrock` y `qwen3-235b-a22b-instruct-2507-scale` activos, y Override Base URL configurado
+- Pedro confirmó que **Docker ya está instalado y funcionando** en este VPS — no necesita instalación adicional
+- Se leyó y analizó el **Manual Stargazer Axiom v1.0** (PDF completo, 20 páginas) — cubre configuración, extracción de model trace, generación de .patch, rubric.json, dependencias npm, consejos de rúbricas, prompts por tipo de issue, los 14 errores comunes y checklist final
+- Se estudió material visual del curso sobre rúbricas con 3 ejemplos concretos (toggle de precios mensual/anual)
+- Se actualizó `references/rubric-guide.md` con nueva sección de ejemplos reales: criterios buenos (atómicos, un solo comportamiento) vs criterios malos (múltiples condiciones mezcladas)
+- Se actualizó `Progreso-Actual/progreso.md` con estado del entorno y notas de rúbricas
+
+**Estado del entorno al 2026-05-14:**
+- ✅ Cursor configurado con API Outlier
+- ✅ Docker instalado en VPS
+- ✅ Entorno listo para empezar primera tarea productiva
+- ⏳ Pendiente: URL del repo asignado por Outlier
+
+**Resultado:** Pedro está listo para comenzar. Solo falta recibir el repo asignado de la plataforma.
+
+---
+
 <!-- Agregar nuevas entradas ARRIBA de esta línea, debajo del último ## -->

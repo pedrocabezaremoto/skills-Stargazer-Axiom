@@ -81,6 +81,26 @@ _Ninguno por ahora._
 
 ---
 
+## Estado del Entorno Local
+
+| Componente | Estado |
+|-----------|--------|
+| Cursor | ✅ Instalado y configurado con API key de Outlier |
+| Docker | ✅ Instalado en este VPS y funcionando |
+| Modelos en Cursor | ✅ `gpt-oss-120b-bedrock` y `qwen3-235b-a22b-instruct-2507-scale` activos |
+| Override Base URL | ✅ `https://cursor-intelligence-api.outlier.ai/api/v1` configurado |
+
+---
+
+## Conocimiento de Rúbricas Actualizado
+
+**2026-05-14:** Se estudió material del curso sobre mejores prácticas de rúbricas:
+- Se agregó sección "Ejemplos reales de rúbricas buenas vs malas" en `references/rubric-guide.md`
+- Lección clave: criterios con múltiples condiciones (Ejemplo 2 y 3 del curso) deben dividirse en criterios atómicos separados
+- Regla de oro agregada: si el criterio contiene "y/o" uniendo dos comportamientos → dividirlo
+
+---
+
 ## Notas del Agente
 
 > Espacio para que el agente deje notas sobre decisiones tomadas o contexto importante.

@@ -166,3 +166,61 @@ Cada criterio debe describirse como algo **observable y que se pueda aprobar o r
 | "La implementación es apropiada" | "El componente muestra un mensaje de error cuando el campo está vacío" |
 
 **Regla de los dos revisores:** si dos revisores diferentes no podrían calificar el criterio de la misma manera sin necesidad de interpretación, el criterio es demasiado subjetivo.
+
+---
+
+## Ejemplos reales de rúbricas buenas vs malas (del curso)
+
+**Contexto del issue:** El toggle Mensual/Anual de la página de precios no actualiza precios ni etiquetas al cambiar a Anual. El botón se resalta correctamente, pero cada tarjeta mantiene su precio mensual y el texto "month" nunca cambia.
+
+### ✅ Ejemplo 1 — Criterios BUENOS (atómicos, verificables)
+
+Estos tres criterios son independientes, uno evalúa una sola cosa, y cualquier revisor puede verificarlos sin interpretar nada:
+
+- "When 'Yearly' is selected, the Consult card shows $500."
+- "The pricing card components receive the price through props rather than embedding hardcoded values."
+- "The active toggle button has the orange highlight applied, and the inactive button does not."
+
+**Por qué son buenos:**
+- Cada uno prueba UNA sola cosa
+- El resultado es claro: pasa o no pasa
+- No necesitan interpretación
+
+---
+
+### ❌ Ejemplo 2 — Criterio MALO (demasiado complejo, múltiples condiciones)
+
+> "A quote whose departureDate falls on Friday after 18:00 UTC, anywhere on Saturday, or anywhere on Sunday carries a +8% weekend surcharge on top of the seat subtotal, relative to an otherwise identical weekday daytime departure; a Friday departure before 18:00 UTC does NOT trigger the weekend surcharge."
+
+**Por qué es malo:**
+- Tiene 4 condiciones distintas combinadas en un solo criterio
+- Si el modelo cumple 3 de las 4 condiciones, ¿pasa o falla? No está claro
+- Debería dividirse en criterios separados: Friday after 18:00, Saturday, Sunday, Friday before 18:00
+
+---
+
+### ❌ Ejemplo 3 — Criterio MALO (matemática específica que mezcla dos comportamientos)
+
+> "When a quote is BOTH a night departure (22:00-05:00 UTC) and a weekend departure, the two surcharges stack additively, yielding +20% on top of the seat subtotal (not the +21.something% that compounding would produce)"
+
+**Por qué es malo:**
+- Combina dos condiciones (noche + fin de semana) en un solo criterio
+- Incluye una aclaración matemática específica que hace el criterio difícil de evaluar
+- Mezcla "qué debe pasar" con "qué no debe pasar" en un solo punto
+
+**Cómo dividirlo correctamente:**
+- Criterio A: "When night departure (22:00-05:00 UTC) applies, a +12% surcharge is added to the seat subtotal."
+- Criterio B: "When weekend departure applies, a +8% surcharge is added to the seat subtotal."
+- Criterio C: "When both surcharges apply simultaneously, they stack additively (total +20%), not multiplicatively."
+
+---
+
+## Regla de oro para verificar atomicidad
+
+Antes de confirmar un criterio, hazte esta pregunta:
+
+> **"¿Puedo evaluar este criterio sin evaluar ninguna otra condición al mismo tiempo?"**
+
+Si la respuesta es NO → dividelo.
+Si contiene la palabra "y" o "o" uniendo dos comportamientos → dividelo.
+Si necesita math o múltiples casos → dividelo.
