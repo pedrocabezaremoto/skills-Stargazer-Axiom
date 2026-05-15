@@ -132,4 +132,49 @@
 
 ---
 
+## [2026-05-15] — Análisis del issue message + nueva estrategia para hacer fallar al modelo
+
+**Qué se hizo:**
+- Se analizó el resultado del modelo `claude-qwen3-5-27b-scale` con el issue message original — resolvió correctamente con `calculateSubtotal()` via `reduce`
+- Se identificó por qué el modelo NO falló: el issue original daba demasiadas pistas ("arithmetic structure", ejemplo exacto $0.07 × 6)
+- Se redactó un segundo issue más vago — el modelo volvió a resolverlo correctamente
+- **Conclusión clave:** el bug es demasiado obvio al leer el código (`+=`/`-=`). El issue message no importa tanto — el código le dice la solución al modelo
+- Se diseñó una **nueva estrategia de misdirection**: apuntar al modelo hacia un problema de mutación de estado en lugar de aritmética
+- Nueva constraint crítica: `"Do NOT refactor how subtotal is computed — only fix the state propagation"` → empuja al modelo a mejorar el cloning del BehaviorSubject sin tocar la aritmética → los tests f2p seguirían fallando
+- Nuevo issue guardado en conversación (pendiente: pegarlo en Cursor y probar)
+
+**Resultado:** Issue message v3 listo con estrategia de misdirection. Pendiente probarlo en Cursor.
+
+**Pendiente inmediato al retomar:**
+1. Pegar el nuevo issue (misdirection → state mutation) en Cursor con `claude-qwen3-5-27b-scale`
+2. Si el modelo cae en la trampa → capturar trace, ese es el fallo válido
+3. Si lo resuelve igual → escalar a estrategia diferente (cambiar el tipo de bug)
+
+---
+
+## [2026-05-15] — TASK01 CANCELADA — Nuton CartService Performance Optimization
+
+**Qué se hizo:**
+- Se canceló la tarea task01 (Nuton Learning App — CartService floating-point drift)
+- La tarea fue anulada antes de completar los pasos 3-8 (Gold patch, tests, Docker, scripts, validación)
+- Se completaron únicamente: Paso 1 (Setup/análisis) y Paso 2 (Issue message v1-v3 redactado)
+- Razón de cancelación: Problemas operacionales diversos (según Pedro, sesión anterior)
+
+**Estado al cierre:**
+- ✅ Repo clonado en `task01/nuton/`
+- ✅ Stack identificado: Angular 19 / TypeScript / Karma + Jasmine
+- ✅ Problema definido: CartService subtotal acumulativo (floating-point drift)
+- ✅ Issue message v3 redactado con estrategia misdirection
+- ❌ Pasos 3-8: NO completados (gold_patch, tests, Docker, scripts, validation)
+- ✅ Carpeta `task01/` mantenida intacta para referencia histórica
+
+**Instrucción futura:**
+- **NO LEER ni continuar task01** — está completamente cancelada
+- Los agentes deben ignorar esta tarea y enfocarse en **task02** en adelante
+- Si algún agente pregunta por task01, derivar a este registro histórico
+
+**Resultado:** Task01 archivada como CANCELADA. Proyecto limpio para task02.
+
+---
+
 <!-- Agregar nuevas entradas ARRIBA de esta línea, debajo del último ## -->

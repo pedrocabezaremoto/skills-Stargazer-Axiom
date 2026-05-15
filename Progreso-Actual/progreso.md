@@ -6,7 +6,17 @@
 
 ---
 
-## Tarea Activa
+## ⚠️ ESTADO: TASK01 CANCELADA
+
+**LA TAREA TASK01 HA SIDO ANULADA Y CANCELADA EL 2026-05-15.**
+
+**INSTRUCCIÓN CRÍTICA:** No leer, no continuar, no modificar task01. Derivar todas las consultas sobre task01 a `Historial/historial.md` → entrada `[2026-05-15] — TASK01 CANCELADA`.
+
+Agentes futuros: **enfocarse completamente en TASK02 en adelante.**
+
+---
+
+## Tarea Activa (CANCELADA)
 
 | Campo | Valor |
 |-------|-------|
@@ -31,10 +41,12 @@
 - [x] Tipo de problema definido (Performance Optimization — CartService)
 
 ### Paso 2 — Creación del issue
-- [x] Issue message redactado (CartService subtotal acumulativo)
-- [ ] Issue pegado en Outlier y dificultad seleccionada (Medium)
-- [ ] Prompt lanzado en Cursor con `claude-qwen3527b-scale` — esperando resultado
-- [ ] Probado con `claude-4.6-sonnet-scale` — pendiente
+- [x] Issue message v1 redactado (CartService subtotal acumulativo)
+- [x] Issue v1 probado con `claude-qwen3-5-27b-scale` → **RESOLVIÓ** (fallo nuestro)
+- [x] Issue v2 probado con `claude-qwen3-5-27b-scale` → **RESOLVIÓ** (fallo nuestro)
+- [x] Issue v3 redactado — estrategia misdirection (apunta a state mutation, no aritmética)
+- [ ] Issue v3 pegado en Cursor con `claude-qwen3-5-27b-scale` — **PENDIENTE**
+- [ ] Verificar si el modelo cae en la trampa (state cloning sin arreglar aritmética)
 - [ ] Model trace exportado y guardado (Export Transcript → .md)
 - [ ] `basetoinstance.patch` generado
 
