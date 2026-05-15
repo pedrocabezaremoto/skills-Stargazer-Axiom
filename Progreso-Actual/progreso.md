@@ -6,84 +6,76 @@
 
 ---
 
-## ⚠️ ESTADO: TASK01 CANCELADA
+## ✅ ESTADO: TASK02 INICIADA
 
-**LA TAREA TASK01 HA SIDO ANULADA Y CANCELADA EL 2026-05-15.**
+**TASK02 ASIGNADA EL 2026-05-15. Entorno listo para comenzar.**
 
-**INSTRUCCIÓN CRÍTICA:** No leer, no continuar, no modificar task01. Derivar todas las consultas sobre task01 a `Historial/historial.md` → entrada `[2026-05-15] — TASK01 CANCELADA`.
-
-Agentes futuros: **enfocarse completamente en TASK02 en adelante.**
+**INSTRUCCIÓN CRÍTICA:** Task01 está cancelada — ignorar completamente. Toda la energía en task02.
 
 ---
 
-## Tarea Activa (CANCELADA)
+## Tarea Activa (TASK02)
 
 | Campo | Valor |
 |-------|-------|
-| Repo asignado | ✅ Repo ID 635272517 — Nuton Learning App |
-| Tipo de problema | ✅ Performance Optimization |
-| Stack tecnológico | ✅ Angular 19 / TypeScript |
-| Framework de tests | ✅ Karma + Jasmine (`npm test`) |
-| Archivo objetivo | ✅ `nuton/src/app/services/cart.service.ts` |
-| Problema identificado | ✅ CartService — subtotal acumulativo (floating-point drift) |
-| Fecha de inicio | 2026-05-14 |
+| Repo asignado | ✅ Repo ID 636561929 — TextBehind SaaS |
+| Tipo de problema | ✅ Bug injection + resolution |
+| Stack tecnológico | ✅ Next.js 15 / React 19 / TypeScript |
+| Framework de tests | 🔄 **POR IDENTIFICAR** (npm scripts disponibles) |
+| Aplicación | AI image editor — coloca texto detrás de objetos |
+| Base de datos | PostgreSQL + Drizzle ORM |
+| Auth | Better Auth |
+| Fecha de inicio | 2026-05-15 |
 
 ---
 
 ## Checklist de la Tarea
 
 ### Paso 1 — Setup y análisis del repo
-- [x] Repo clonado en directorio de trabajo (`task01/`)
-- [x] Stack tecnológico identificado (Angular 19 / TypeScript)
-- [x] Framework de testing identificado (Karma + Jasmine)
-- [x] Comando de tests identificado (`npm test`)
-- [x] Archivos de configuración relevantes identificados
-- [x] Tipo de problema definido (Performance Optimization — CartService)
+- [x] Repo clonado en `task02/App/` ← Ya existe
+- [x] Stack identificado: Next.js 15 / React 19 / TypeScript / Tailwind
+- [ ] Framework de testing identificado (buscar en scripts o package.json)
+- [ ] Comando de tests encontrado
+- [ ] Archivos de configuración relevantes identificados (tsconfig, next.config)
+- [ ] **PENDIENTE:** Identificar DÓNDE está el bug a inyectar
+  - ¿Autenticación? ¿Procesamiento de imágenes? ¿Database? ¿API?
 
 ### Paso 2 — Creación del issue
-- [x] Issue message v1 redactado (CartService subtotal acumulativo)
-- [x] Issue v1 probado con `claude-qwen3-5-27b-scale` → **RESOLVIÓ** (fallo nuestro)
-- [x] Issue v2 probado con `claude-qwen3-5-27b-scale` → **RESOLVIÓ** (fallo nuestro)
-- [x] Issue v3 redactado — estrategia misdirection (apunta a state mutation, no aritmética)
-- [ ] Issue v3 pegado en Cursor con `claude-qwen3-5-27b-scale` — **PENDIENTE**
-- [ ] Verificar si el modelo cae en la trampa (state cloning sin arreglar aritmética)
-- [ ] Model trace exportado y guardado (Export Transcript → .md)
-- [ ] `basetoinstance.patch` generado
+- [ ] Bug específico identificado y documentado
+- [ ] Issue message v1 redactado
+- [ ] Problema entendible pero NO da la solución
+- [ ] Probado con `claude-sonnet-4-6-scale` (modelo 1)
+- [ ] Probado con `claude-qwen3-5-27b-scale` (modelo 2)
+- [ ] Al menos 1 modelo FALLA (requisito mínimo)
+- [ ] Model trace exportado y guardado
 
-### Paso 3 — Gold patch
-- [ ] Solución correcta implementada
+### Paso 3 — Gold patch (solución correcta)
+- [ ] Solución correcta implementada en código
 - [ ] `gold_patch.patch` generado
-- [ ] Verificado: `git apply --ignore-whitespace gold_patch.patch` funciona
-- [ ] Repo restaurado al estado roto
+- [ ] Verificado: aplicar el patch funciona
 
-### Paso 4 — Tests
-- [ ] Tests f2p escritos (`*.f2p.test.*`)
-- [ ] Tests p2p escritos (`*.p2p.test.*`)
-- [ ] Tests son autónomos (sin dependencias externas)
+### Paso 4 — Tests (F2P y P2P)
+- [ ] Tests F2P escritos (deben fallar sin el fix)
+- [ ] Tests P2P escritos (deben pasar siempre)
 - [ ] `test_patch.patch` generado
-- [ ] Verificado: f2p FALLAN en estado roto
-- [ ] Verificado: p2p PASAN en estado roto
-- [ ] Verificado: todo PASA con gold_patch aplicado
 
 ### Paso 5 — Dockerfiles
-- [ ] `Base.dockerfile` creado
-- [ ] `Instance.dockerfile` creado
-- [ ] Build de Base exitoso
-- [ ] Build de Instance exitoso
+- [ ] `base.Dockerfile` creado
+- [ ] `instance.Dockerfile` creado
+- [ ] Builds exitosos
 
 ### Paso 6 — Scripts
 - [ ] `run_script.sh` creado
 - [ ] `parse_results.sh` creado
-- [ ] Ejecución manual exitosa
+- [ ] Manual execution exitosa
 
 ### Paso 7 — Validación
 - [ ] `validation_script.sh` corrido
 - [ ] Todas las secciones PASS
-- [ ] `test_results.json` generado correctamente
 
 ### Paso 8 — Entrega
+- [ ] Rubric.json generado
 - [ ] Tarea entregada en Outlier
-- [ ] Resultado registrado en `Historial/historial.md`
 
 ---
 

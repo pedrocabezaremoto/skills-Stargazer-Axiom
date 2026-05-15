@@ -224,3 +224,154 @@ Antes de confirmar un criterio, hazte esta pregunta:
 Si la respuesta es NO → dividelo.
 Si contiene la palabra "y" o "o" uniendo dos comportamientos → dividelo.
 Si necesita math o múltiples casos → dividelo.
+
+---
+
+## Generación del Archivo rubric.json
+
+### Contexto
+
+Una vez que termines la tarea en la plataforma Stargazer, la rúbrica que creaste está disponible en la interfaz de la plataforma. Necesitas **extraer esa rúbrica**, procesarla con una herramienta, y generar el archivo `rubric.json` que se entrega junto con la tarea.
+
+### Paso 1 — Extraer el Texto de la Rúbrica desde la Plataforma
+
+1. **Finaliza la tarea** en la plataforma Stargazer
+2. Ve al panel izquierdo de la tarea
+3. Haz clic en el **icono de pin** del paso "**Define criteria**"
+4. **Expande TODOS los criterios** — asegúrate de que cada uno esté completamente visible
+5. **Selecciona todo el texto** de la rúbrica (Ctrl+A o Cmd+A)
+6. **Cópialo** (Ctrl+C o Cmd+C)
+
+### Paso 2 — Formato Exacto Esperado
+
+El texto que copies debe respetar estrictamente este formato (es el que la herramienta de parsing espera):
+
+```
+f2p_success
+Weight: 16
+Weight
+16
+Requirement
+All tests in tests/build.f2p.test.js pass after applying the gold patch
+
+Category
+correctness
+
+p2p_success
+Weight: 16
+Weight
+16
+Requirement
+All tests in tests/build.p2p.test.js pass in both Phase 1 and Phase 2
+
+Category
+correctness
+
+[... otros criterios ...]
+```
+
+**Estructura de cada criterio:**
+- **Nombre del criterio** (ej: `f2p_success`)
+- **Línea 1:** `Weight: {número}`
+- **Línea 2:** `Weight`
+- **Línea 3:** `{número}` (mismo que arriba)
+- **Línea 4:** `Requirement`
+- **Línea 5+:** Descripción del requisito (puede ser múltiples líneas)
+- **Línea N:** `Category`
+- **Línea N+1:** Categoría (ej: `correctness`)
+- **Línea vacía** entre criterios
+
+### Paso 3 — Usar la Herramienta de Parsing
+
+1. Abre la **herramienta generadora de rúbricas** en la plataforma Stargazer (ubicación: panel de validación/herramientas)
+2. Haz clic en el **input box**
+3. **Pega el texto** que copiaste
+4. Haz clic en el botón **"Parse Rubric"**
+5. La herramienta procesa el texto y genera automáticamente la estructura `rubric.json`
+
+### Paso 4 — Descargar o Copiar el Archivo
+
+Después de hacer clic en "Parse Rubric", tienes dos opciones:
+
+**Opción A — Descargar directamente:**
+- Haz clic en **"Download rubric.json"**
+- El archivo se descarga a tu carpeta de descargas
+- Cópialo a la carpeta raíz de tu tarea
+
+**Opción B — Copiar manualmente:**
+- En el recuadro **RESULT**, haz clic en **"Raw JSON"**
+- Copia todo el JSON
+- Crea un nuevo archivo `rubric.json` en la carpeta raíz
+- Pega el contenido
+- Guarda el archivo
+
+### Paso 5 — Validación
+
+Verifica que el archivo `rubric.json` generado:
+
+```bash
+# 1. Es válido JSON
+jq . rubric.json
+
+# 2. La suma de pesos es exactamente 100
+jq '[.criteria[].weight] | add' rubric.json
+# Debe devolver: 100
+
+# 3. Tiene los campos requeridos
+jq '.criteria[0]' rubric.json
+# Debe tener: name, weight, requirement, category
+```
+
+### Errores Comunes
+
+| Problema | Causa | Solución |
+|----------|-------|----------|
+| Error de parsing | El formato del texto copiado no coincide | Verificar que estén incluidos `Weight`, `Weight {número}`, `Requirement`, `Category` |
+| Suma de pesos ≠ 100 | Entrada manual de pesos incorrecto | Verificar en la plataforma que cada peso sea exacto |
+| Criterios faltantes | No expandiste todos en la plataforma | Volver a copiar asegurando que TODOS estén visibles |
+| Archivo vacío | El botón "Download" descargó un archivo sin contenido | Usar "Raw JSON" y copiar manualmente |
+| JSON inválido | El parser generó estructura corrupta | Intentar de nuevo; si persiste, reportar a QM |
+
+### Estructura Final Esperada
+
+El `rubric.json` debe tener esta estructura:
+
+```json
+{
+  "criteria": [
+    {
+      "name": "f2p_success",
+      "weight": 16,
+      "requirement": "All tests in tests/build.f2p.test.js pass after applying the gold patch",
+      "category": "correctness"
+    },
+    {
+      "name": "p2p_success",
+      "weight": 16,
+      "requirement": "All tests in tests/build.p2p.test.js pass in both Phase 1 and Phase 2",
+      "category": "correctness"
+    },
+    ...
+  ]
+}
+```
+
+**Validación de criterios:**
+- ✅ Todos los criterios tienen `name`, `weight`, `requirement`, `category`
+- ✅ La suma de todos los `weight` es exactamente `100`
+- ✅ `f2p_success` + `p2p_success` ≥ `20%` (visual) o ≥ `30%` (lógica)
+- ✅ Los nombres de criterios son únicos
+- ✅ Las categorías son reconocidas (`correctness`, `feature_completeness`, etc.)
+
+---
+
+## Checklist de Creación de Rúbrica
+
+- [ ] Atomicidad: cada criterio evalúa exactamente UNA cosa
+- [ ] Granularidad: rúbrica y prompt tienen el mismo nivel de especificidad
+- [ ] Pesos: suma exacta de 100
+- [ ] F2P + P2P: mínimo 20% (visual) o 30% (lógica)
+- [ ] Criterios MECE: sin solapamiento, cobertura completa
+- [ ] Objetividad: sin palabras vagas ("bueno", "óptimo", etc.)
+- [ ] Formato: `rubric.json` generado y validado
+- [ ] Estructura: todos los criterios tienen `name`, `weight`, `requirement`, `category`

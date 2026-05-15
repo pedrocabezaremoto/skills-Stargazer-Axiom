@@ -36,20 +36,49 @@ El script genera `analysis_results.json` y un resumen en la terminal.
 
 # Paso 6: Añadir Etiquetas
 
-Para facilitar la categorización de la tarea, añade etiquetas relevantes.
+Para facilitar la categorización de la tarea en la plataforma Outlier, debes agregar etiquetas relevantes que describan el stack, framework y tipo de problema.
 
 ## Etiquetas disponibles
+
+Las siguientes etiquetas están disponibles en la plataforma Outlier:
 
 ```
 JavaScript    TypeScript    Angular       Node
 Redux         Babel         Webpack       Jest
-localStorag   API           CSS           Frontend
+localStorage  API           CSS           Frontend
 Backend       Other         Web Frameworks
 NextJS        React.js      Vue.js        JQuery
-Svelte        BootStrap
+Svelte        Bootstrap
 ```
 
-> Si tu tarea requiere una etiqueta específica que no aparece, selecciona **"Other"** para añadirla manualmente.
+## Cómo agregar etiquetas
+
+1. **Ubicación:** En el formulario de entrega de tarea en la plataforma Outlier
+2. **Selecciona múltiples:** Puedes marcar 1 o más etiquetas que describan tu tarea
+3. **Requisito mínimo:** Al menos 1 etiqueta debe estar seleccionada
+4. **Alineación con tu issue:** Las etiquetas deben reflejar las tecnologías usadas en el repo y el tipo de problema
+
+### Ejemplo de alineación
+
+| Repo | Tecnologías | Etiquetas recomendadas |
+|------|-----------|------------------------|
+| Angular 19 app | Angular, TypeScript, Karma | `TypeScript`, `Angular`, `Frontend` |
+| Next.js 15 app | Next.js, React, TypeScript | `TypeScript`, `NextJS`, `React.js`, `Frontend` |
+| Node.js API | Node, Express, Jest | `Node`, `Backend`, `Jest` |
+| Vue.js SPA | Vue, CSS, localStorage | `Vue.js`, `Frontend`, `CSS` |
+
+## Si tu etiqueta no aparece en la lista
+
+1. Selecciona **"Other"** como una de tus etiquetas
+2. Escribe el nombre personalizado en el campo de texto que aparezca
+3. Envía la tarea — el revisor la categorizará correctamente
+
+## Checklist del Paso 6
+
+- [ ] Identificadas las tecnologías principales del repo
+- [ ] Seleccionadas al menos 1 etiqueta relevante
+- [ ] Si agregaste etiquetas personalizadas, escrito el nombre en "Other"
+- [ ] Las etiquetas reflejan tanto el stack como el tipo de problema (bug, feature, optimization, etc.)
 
 ---
 
