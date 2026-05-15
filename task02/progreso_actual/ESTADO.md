@@ -13,14 +13,14 @@
 - Problema: Falta `else` para manejar device types inesperados
 - Status: Identificado y documentado
 
-### Paso 2: 🔄 EN PROGRESO
+### Paso 2: ✅ COMPLETADO
 **Crear Issue Messages para Confundir Modelos**
 
-#### Versión Actual: `issue_message_1.md`
-- Status: Generado y listo para testing
-- Descripción: Baseline profesional - describe síntoma sin ser específico
-- Siguiente: Esperar resultado del testing con modelos
-- Plan: Si modelo lo arregla → crear `issue_message_2` (más vago)
+#### Prompt Ganador: `issue_message_1.md` — Sección 1.3
+- Modelo que falló: QWEN 3.5 27B
+- Prompt copiado a: `task02/issue_message.txt`
+- Trace guardado en: `historial/2026-05-15_model_trace_failure.md`
+- Análisis en: `prompts_modelos/analysis_prompt1_3_failure.md`
 
 ---
 
@@ -28,28 +28,32 @@
 
 | Mensaje | Status | Descripción | Prueba |
 |---------|--------|-------------|--------|
-| issue_message_1 | ✅ Listo | Baseline claro | Pendiente |
-| issue_message_2 | ⏳ Próximo | Más vago | - |
-| issue_message_3 | ⏳ Próximo | Síntomas solo | - |
-| issue_message_4+ | ⏳ Futuro | Misdirection | - |
+| prompt 1.0 | ❌ Arregló bug | Baseline claro con posthog.ts | QWEN 3.5 27B |
+| prompt 1.1 | 🧪 Sin probar | Sin nombre de archivo | - |
+| prompt 1.2 | 🧪 Sin probar | Solo síntoma frontend | - |
+| prompt 1.3 | ✅ GANADOR | Misdirection sorting/fechas | QWEN 3.5 27B |
 
 ---
 
 ## 🎯 Próximos Pasos
 
-1. **Testing mensaje_1 en Cursor**
-   - Modelo: Sonnet 4.6 y QWEN 3.5 27B
-   - Acción: Pegar en chat y observar si arregla o falla
-   - Meta: Encontrar cuál modelo falla
+### Paso 3: ⏳ EN PROGRESO
+**Validación con validation_script.sh**
 
-2. **Si modelo lo arregla:**
-   - Crear `issue_message_2.md` (más vago)
-   - Volver a probar
+1. **Limpiar Docker cache y re-correr:**
+   ```bash
+   cd /root/skills-Stargazer-Axiom/validation_script
+   docker system prune -f
+   ./validation_script.sh --local /root/skills-Stargazer-Axiom/task02 --task-id task02
+   ```
 
-3. **Cuando un modelo falle:**
-   - Exportar chat/trace
-   - Documentar en `historial/`
-   - Completar Paso 2 ✅
+2. **Si el script pasa:**
+   - Tomar el output JSON en `logs/task02/`
+   - Subir a la plataforma Outlier
+
+3. **Si el script falla:**
+   - Revisar logs en `validation_script/logs/task02/`
+   - Corregir lo que falle y re-correr
 
 ---
 

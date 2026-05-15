@@ -8,14 +8,22 @@ El bug: En `posthog.ts` (líneas 107-113), falta un `else` para manejar device t
 
 ---
 
-## El Flujo
+## El Flujo (actualizado 2026-05-15)
 
-Vamos a ir creando **un message a la vez**:
+Cada issue_message tiene **sub-versiones** dentro del mismo archivo (1.0, 1.1, 1.2...):
 
-1. **issue_message_1** → Prueba con Sonnet 4.6 y QWEN
-2. Si modelo lo arregla → **issue_message_2** (más confuso)
-3. Si modelo lo arregla → **issue_message_3** (aún más confuso)
-4. ... hasta que **el modelo falle** ✅
+- Si el modelo arregla el bug → pasamos al siguiente sub-prompt del mismo archivo
+- Cuando un sub-prompt logra que el modelo falle → ese es el ganador
+- Si todos los sub-prompts del archivo fallan → pasamos al siguiente archivo (issue_message_2.md)
+
+### Historial de progreso
+
+| Prompt | Modelo | Resultado |
+|--------|--------|-----------|
+| 1.0 (original) | QWEN 3.5 27B | ❌ Lo arregló — identificó if/else en líneas 107-113 directo |
+| 1.1 | — | 🧪 Sin probar |
+| 1.2 | — | 🧪 Sin probar |
+| 1.3 | — | 🧪 Sin probar |
 
 ---
 

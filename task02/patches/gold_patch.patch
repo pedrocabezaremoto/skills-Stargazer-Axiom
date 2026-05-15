@@ -1,0 +1,15 @@
+diff --git a/app/src/server/api/routers/posthog.ts b/app/src/server/api/routers/posthog.ts
+index 2a6f4b0..6d64c60 100644
+--- a/app/src/server/api/routers/posthog.ts
++++ b/app/src/server/api/routers/posthog.ts
+@@ -107,8 +107,8 @@ export const posthogRouter = createTRPCRouter({
+           const lowerCaseDeviceType = deviceType?.toLowerCase();
+           if (lowerCaseDeviceType === "mobile") {
+             processedData[date].mobile += views;
+-          } else if (lowerCaseDeviceType === "desktop") {
+-            // Consider other types as desktop or ignore
++          } else {
++            // Treat all other types (desktop, tablet, null, bots) as desktop to prevent data loss
+             processedData[date].desktop += views;
+           }
+           // You might want to handle 'tablet' or other device types explicitly

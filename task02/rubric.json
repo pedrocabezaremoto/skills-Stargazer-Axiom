@@ -1,0 +1,47 @@
+[
+  {
+    "id": "c2a1-f2p",
+    "title": "f2p_success",
+    "weight": 25,
+    "annotations": {
+      "criteria_requirement": "Las pruebas F2P pasan después de aplicar el gold patch, verificando que los tipos de dispositivo diferentes a mobile y desktop (ej. tablet, null) se incluyan en el conteo de visitantes para evitar pérdida de datos.",
+      "criteria_category": "correctness"
+    }
+  },
+  {
+    "id": "c2a2-p2p",
+    "title": "p2p_success",
+    "weight": 15,
+    "annotations": {
+      "criteria_requirement": "Las pruebas P2P siguen pasando después de aplicar el gold patch, confirmando que los tipos de dispositivo estándar (mobile, desktop) se siguen contando correctamente sin regresiones.",
+      "criteria_category": "correctness"
+    }
+  },
+  {
+    "id": "c2a3-logic",
+    "title": "full_data_inclusion",
+    "weight": 20,
+    "annotations": {
+      "criteria_requirement": "La solución asegura que TODOS los registros devueltos por la API de PostHog se incluyan en el resultado final, manejando cualquier valor de deviceType sin descartes silenciosos mediante un bloque else general.",
+      "criteria_category": "correctness"
+    }
+  },
+  {
+    "id": "c2a4-style",
+    "title": "code_readability",
+    "weight": 20,
+    "annotations": {
+      "criteria_requirement": "El código del fix es legible, mantiene el estilo de codificación del proyecto original e incluye un comentario explicativo sobre la prevención de pérdida de datos.",
+      "criteria_category": "readability"
+    }
+  },
+  {
+    "id": "c2a5-min",
+    "title": "minimal_solution",
+    "weight": 20,
+    "annotations": {
+      "criteria_requirement": "La solución es mínima y no refactoriza innecesariamente las estructuras de datos ni la lógica de tRPC, cumpliendo con las restricciones del prompt.",
+      "criteria_category": "efficiency"
+    }
+  }
+]

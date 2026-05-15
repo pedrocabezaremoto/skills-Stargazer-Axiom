@@ -1,0 +1,84 @@
+diff --git a/app/src/server/api/routers/posthog.f2p.test.ts b/app/src/server/api/routers/posthog.f2p.test.ts
+new file mode 100644
+index 0000000..58bb584
+--- /dev/null
++++ b/app/src/server/api/routers/posthog.f2p.test.ts
+@@ -0,0 +1,40 @@
++import { describe, it, expect, vi } from 'vitest';
++import { posthogRouter } from './posthog';
++
++// Mock the environment
++vi.mock('@/env', () => ({
++  env: {
++    NEXT_PUBLIC_POSTHOG_HOST: 'https://app.posthog.com',
++    POSTHOG_PROJECT_ID: '123',
++    POSTHOG_PERSONAL_API_KEY: 'ph_key',
++  }
++}));
++
++describe('posthogRouter.getVisitors F2P', () => {
++  it('App/app/src/server/api/routers/posthog.f2p.test.ts | should count tablet and null as desktop :: FAILED', async () => {
++    // Mock fetch
++    const mockResults = [
++      ['2024-01-01', 'mobile', 10],
++      ['2024-01-01', 'desktop', 20],
++      ['2024-01-01', 'tablet', 5],
++      ['2024-01-01', null, 2],
++    ];
++
++    global.fetch = vi.fn().mockResolvedValue({
++      ok: true,
++      json: () => Promise.resolve({ results: mockResults }),
++    });
++
++    // In the broken state, mobile=10, desktop=20.
++    // In the fixed state, mobile=10, desktop=20+5+2 = 27.
++    
++    // Create a mock caller
++    const caller = posthogRouter.createCaller({} as any);
++    const result = await caller.getVisitors({ timeRange: '7d' });
++
++    const day1 = result.find(r => r.date === '2024-01-01');
++    expect(day1?.mobile).toBe(10);
++    // This expectation will fail in the broken state (it will be 20, not 27)
++    expect(day1?.desktop).toBe(27);
++  });
++});
+diff --git a/app/src/server/api/routers/posthog.p2p.test.ts b/app/src/server/api/routers/posthog.p2p.test.ts
+new file mode 100644
+index 0000000..3682b66
+--- /dev/null
++++ b/app/src/server/api/routers/posthog.p2p.test.ts
+@@ -0,0 +1,32 @@
++import { describe, it, expect, vi } from 'vitest';
++import { posthogRouter } from './posthog';
++
++// Mock the environment
++vi.mock('@/env', () => ({
++  env: {
++    NEXT_PUBLIC_POSTHOG_HOST: 'https://app.posthog.com',
++    POSTHOG_PROJECT_ID: '123',
++    POSTHOG_PERSONAL_API_KEY: 'ph_key',
++  }
++}));
++
++describe('posthogRouter.getVisitors P2P', () => {
++  it('App/app/src/server/api/routers/posthog.p2p.test.ts | should count mobile and desktop correctly :: PASSED', async () => {
++    const mockResults = [
++      ['2024-01-01', 'mobile', 15],
++      ['2024-01-01', 'desktop', 25],
++    ];
++
++    global.fetch = vi.fn().mockResolvedValue({
++      ok: true,
++      json: () => Promise.resolve({ results: mockResults }),
++    });
++
++    const caller = posthogRouter.createCaller({} as any);
++    const result = await caller.getVisitors({ timeRange: '7d' });
++
++    const day1 = result.find(r => r.date === '2024-01-01');
++    expect(day1?.mobile).toBe(15);
++    expect(day1?.desktop).toBe(25);
++  });
++});
